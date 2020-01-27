@@ -49,7 +49,7 @@ int Mario::PlayGame()
                 m_Score = m_MarioEvent.mouseMove.x;
                 m_CoinCount = m_MarioEvent.mouseMove.y;
                     
-                m_Level = m_pObstacle->m_bIsObstacle[m_MarioEvent.mouseMove.x][m_MarioEvent.mouseMove.y];
+//                m_Level = m_pObstacle->m_bIsObstacle[m_MarioEvent.mouseMove.x][m_MarioEvent.mouseMove.y];
                 break;
                     
             case sf::Event::KeyPressed:
@@ -65,7 +65,6 @@ int Mario::PlayGame()
                 {
                     m_pPlayer->SetBehaviour(Entity::AIR);
                 }
-                LogDebug(BIT_MARIO, "X: %f, Y: %f Frame %f\n", m_pPlayer->GetPosition().X, m_pPlayer->GetPosition().Y, m_FramePosition);
                 break;
                 
             default:
@@ -92,7 +91,7 @@ void Mario::MoveBgAt()
 
 void Mario::DrawPlayer()
 {
-    if(Entity::DYING != m_pPlayer->GetBehaviour())
+//    if(Entity::DYING != m_pPlayer->GetBehaviour())
     {
         m_pPlayer->SetNewPosition();
         m_pPlayer->LoadPlayerImage();

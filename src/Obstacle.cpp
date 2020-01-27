@@ -14,7 +14,7 @@ bool IsHollow(int Index)
     ((Index >= HOLLOW_POS_2) && (Index <= HOLLOW_POS_2 + HOLLOW_WIDTH)) ||
     ((Index >= HOLLOW_POS_3) && (Index <= HOLLOW_POS_3 + HOLLOW_WIDTH)))
     {
-        LogDebug(BIT_OBSTACLE, "%d \n", Index);
+//        LogDebug(BIT_OBSTACLE, "%d \n", Index);
     }
     
     return (((Index >= HOLLOW_POS_1) && (Index <= HOLLOW_POS_1 + HOLLOW_WIDTH)) ||

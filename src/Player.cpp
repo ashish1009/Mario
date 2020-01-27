@@ -2,12 +2,12 @@
 #include "Logger.h"
 
 #define PLAYER_X_SCALE_FACTOR 1.5
-#define PLAYER_Y_SCALE_FACTOR 2
+#define PLAYER_Y_SCALE_FACTOR 1
 
 Player *Player::m_pInstance = nullptr;
 
 Player::Player()
-    : m_Vector(PLAYER_WIDTH, PLAYER_HEIGHT_SMALL), m_PrintSize(PLAYER_WIDTH * 1.5, PLAYER_HEIGHT_SMALL << 1) ,m_PlayerImg(0)
+    : m_Vector(PLAYER_WIDTH, PLAYER_HEIGHT_SMALL), m_PrintSize(PLAYER_WIDTH * PLAYER_X_SCALE_FACTOR, PLAYER_HEIGHT_SMALL << PLAYER_Y_SCALE_FACTOR) ,m_PlayerImg(0)
 {
 //    IncSize();
 //    SetPosition(PLAYER_BASE_X, PLAYER_BASE_Y - 50);
@@ -23,7 +23,7 @@ Player::~Player()
 
 void Player::Init()
 {
-    SetPosition(PLAYER_BASE_X, PLAYER_BASE_Y -50);
+    SetPosition(PLAYER_BASE_X, PLAYER_BASE_Y - 50);
     m_Vector = {PLAYER_WIDTH, PLAYER_HEIGHT_SMALL};
     m_PrintSize = {PLAYER_WIDTH * PLAYER_X_SCALE_FACTOR, PLAYER_HEIGHT_SMALL << PLAYER_Y_SCALE_FACTOR};
     m_PlayerImg = 0;
@@ -89,7 +89,7 @@ void Player::Move(float &FrameX, const Player::Direction_e Direction)
 
     SetDirection(Direction);
     
-    if (!IsCollision())
+    if ((!IsCollision()) && (DYING != m_Behaviour))
     {
         if (RIGHT == Direction)
         {
@@ -112,7 +112,6 @@ void Player::Move(float &FrameX, const Player::Direction_e Direction)
             {
                 SetPosition(m_Position.X + m_Speed, m_Position.Y);
             }
-            SetBehaviour(AIR);
         }
         else if (LEFT == Direction)
         {
@@ -121,6 +120,7 @@ void Player::Move(float &FrameX, const Player::Direction_e Direction)
                 SetPosition(m_Position.X - m_Speed, m_Position.Y);
             }
         }
+        SetBehaviour(AIR);
     }
 }
 
@@ -133,13 +133,12 @@ void Player::IncSize()
 
 void Player::SetNewPosition()
 {
-    if((AIR == m_Behaviour) && (!IsCollision()))
+    if(((AIR == m_Behaviour) || (DYING == m_Behaviour)) && (!IsCollision()))
     {
         const short PlayerHead = WIN_HEIGHT + ((SMALL == m_Size) ? PLAYER_HEIGHT_SMALL : PLAYER_HEIGHT_BIG);
         if(PlayerHead > m_Position.Y)
         {
             SetPosition(m_Position.X, m_Position.Y + 1);
-
             if(PLAYER_BASE_Y + 1 == m_Position.Y )
             {
                 SetBehaviour(DYING);
@@ -161,12 +160,19 @@ bool Player::IsCollision()
     switch (m_Behaviour)
     {
         case AIR:
+        case DYING:
+//            LogDebug(BIT_PLAYER, "Collision() AIR, X: %f, Y: %f, colli", m_Position.X, m_Position.Y);
+                              
             for (int i = m_Position.X; i < m_Position.X + PLAYER_WIDTH; i++)
+            {
+//                printf(" %d ", m_pObstacle->IsEmptyFramePixel(i, m_Position.Y));
                 if(m_pObstacle->IsEmptyFramePixel(i, m_Position.Y))
                 {
                     m_Behaviour = GROUND;
                     return true;
                 }
+            }
+//            LogDebug(BIT_PLAYER, "\n");
             break;
 
         case GROUND:
@@ -175,9 +181,10 @@ bool Player::IsCollision()
                 const unsigned short PlayerHeight = (SMALL == m_Size) ? PLAYER_HEIGHT_SMALL : PLAYER_HEIGHT_BIG;
                 short X = (short)((PLAYER_WIDTH * PLAYER_X_SCALE_FACTOR) * WIN_WIDTH / 1000);
 
+//                LogDebug(BIT_PLAYER, "Collision(), RIGHT X: %f, Y %f colll %d \n", m_Position.X + X, m_Position.Y, m_pObstacle->IsEmptyFramePixel(m_Position.X + X, m_Position.Y - 1));
+                
                 for (short i = m_Position.Y - PlayerHeight; i < m_Position.Y; i++)
                 {
-//                    LogDebug(BIT_PLAYER, "Collision(), X: %f, Y %d colll %d \n", m_Position.X + X, i, m_pObstacle->IsEmptyFramePixel(m_Position.X + PLAYER_WIDTH, i));
                     if(m_pObstacle->IsEmptyFramePixel(m_Position.X + X, i))
                         return true;
                 }
