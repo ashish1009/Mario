@@ -35,6 +35,8 @@ class Player : public Entity
 {
 private:
     static inline const std::string PLAYER_IMG_PATH = "Graphics/Mario.png";
+    static const unsigned short DEFAULT_JUMP_HEIGHT = 80;
+    static const unsigned short JUMP_FACTOR = 4;
     
     static Player *m_pInstance;
     sf::Vector2<float> m_Vector;
@@ -42,6 +44,7 @@ private:
     TileMap m_Map;
     Obstacle *m_pObstacle;
     unsigned short m_PlayerImg;
+    unsigned short m_JumpHeight;
 
 private:
     void Init();
@@ -59,6 +62,7 @@ public:
     void DrawPlayer(sf::RenderWindow &m_WinMario) const;
     void Move(float &FrameX, const Player::Direction_e Direction);
     void SetNewPosition();
+    void JumpPlayer();
 
     inline void SetPlayerImg(const unsigned short ImgIdx)
     {

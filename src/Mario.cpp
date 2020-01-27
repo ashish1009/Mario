@@ -48,28 +48,35 @@ int Mario::PlayGame()
             case sf::Event::MouseMoved:
                 m_Score = m_MarioEvent.mouseMove.x;
                 m_CoinCount = m_MarioEvent.mouseMove.y;
-                    
-//                m_Level = m_pObstacle->m_bIsObstacle[m_MarioEvent.mouseMove.x][m_MarioEvent.mouseMove.y];
+
+//                m_Level = m_pObstacle->m_bIsObstacle[m_MarioEvent.mouseMove.x][m_MarioEvent.mouseMove.y].bIsObstacle;
                 break;
-                    
+
             case sf::Event::KeyPressed:
-                if(m_MarioEvent.key.code == sf::Keyboard::Right)
+                if(m_MarioEvent.key.code == sf::Keyboard::LAlt)
                 {
-                    MovePlayer(Entity::RIGHT);
+                    m_pPlayer->SetBehaviour(Entity::JUMPING);
                 }
-                else if(m_MarioEvent.key.code == sf::Keyboard::Left)
                 {
-                    MovePlayer(Entity::LEFT);
+                    if(m_MarioEvent.key.code == sf::Keyboard::Right)
+                    {
+                        MovePlayer(Entity::RIGHT);
+                    }
+                    else if(m_MarioEvent.key.code == sf::Keyboard::Left)
+                    {
+                        MovePlayer(Entity::LEFT);
+                    }
                 }
-                if(m_MarioEvent.key.code == sf::Keyboard::LSystem)
-                {
-                    m_pPlayer->SetBehaviour(Entity::AIR);
-                }
-                break;
-                
+            
             default:
                 break;
             }
+
+        }
+
+        if(Entity::JUMPING == m_pPlayer->GetBehaviour())
+        {
+            m_pPlayer->JumpPlayer();
         }
         
         MoveBgAt();
@@ -101,8 +108,8 @@ void Mario::DrawPlayer()
 
 void Mario::DrawBlock()
 {
-#define BLOCK_Y 200
-#define BLOCK_X 200
+#define BLOCK_Y 150
+#define BLOCK_X 100
     if(0 < (BLOCK_X - m_FramePosition))
     {
         Entity::Position_s Position;
@@ -147,7 +154,6 @@ void Mario::ResetScreenAndPlayer()
     m_View.reset(sf::FloatRect(0.f, 0.f, MARIO_WIDTH, MARIO_HEIGHT));
     
     m_pPlayer->SetPlayerImg(PlayerImgIdx::STAND);
-//    m_pPlayer->SetBehaviour(Entity::AIR);
         
     sf::Time time = m_Clock.getElapsedTime();
     m_Time = time.asSeconds();

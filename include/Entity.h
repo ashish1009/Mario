@@ -56,7 +56,7 @@ public:
     };
 
     typedef unsigned short Speed;
-    static const unsigned short DEFAULT_SPEED = 5;
+    static const unsigned short DEFAULT_SPEED = 2;
     static const unsigned short MAX_SPEED = 2;
 
 public:

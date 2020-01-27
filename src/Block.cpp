@@ -18,6 +18,14 @@ int Block::LoadBlockImage(Entity::Position_s Position)
 #define BLOCK_PRINT_SIZE 64
     TileMap::PrintControl_s PrintControl;
     
+    {
+#define NUM_SCORE_BLOCK_BLINK 3
+        static short BlockImgIdx = 0;
+        BlockImgIdx++;
+        
+        m_BlockImg = (BlockImgIdx / 10) % NUM_SCORE_BLOCK_BLINK;
+    }
+    
     PrintControl.TileSet = ResourcePath + BLOCK_IMG_PATH;
     PrintControl.Position = Position;
     PrintControl.ImgY = 0;
@@ -29,20 +37,16 @@ int Block::LoadBlockImage(Entity::Position_s Position)
     if (!m_Tile.Load(PrintControl))
         return EXIT_FAILURE;
         
-//    if(PrintControl.bObstacle)
-    {
-        Obstacle *pObstacle = Obstacle::GetInstance();
-    
-        short X = (short)(BLOCK_PRINT_SIZE * WIN_WIDTH) / 1000;
-        short Y = (short)(BLOCK_PRINT_SIZE * WIN_HEIGHT) / 1000;
+    Obstacle *pObstacle = Obstacle::GetInstance();
 
-        for (short i = Position.X; i <= (Position.X + X); i++)
+    short X = (short)(BLOCK_PRINT_SIZE * WIN_WIDTH) / 1000;
+    short Y = (short)(BLOCK_PRINT_SIZE * WIN_HEIGHT) / 1000;
+
+    for (short i = Position.X; i <= (Position.X + X); i++)
+    {
+        for (short j = (Position.Y - Y); j <= Position.Y; j++)
         {
-            for (short j = (Position.Y - Y); j <= Position.Y; j++)
-            {
-//                LogDebug(BIT_BLOCK, "X %d %d %d %d\n", X, Y, i, j);
-                pObstacle->SetObstacle(i, j);
-            }
+            pObstacle->SetObstacle(i, j, Obstacle::NONE);
         }
     }
 
@@ -55,3 +59,7 @@ void Block::DrawBlock(sf::RenderWindow &m_WinMario) const
     m_WinMario.setView(view2);
     m_WinMario.draw(m_Tile);
 }
+
+
+// 100 - 125
+// 136 - 150

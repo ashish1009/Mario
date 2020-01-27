@@ -12,11 +12,29 @@ const unsigned short FRAME_PIXEL_ARRAY_Y = WIN_HEIGHT / BASIC_PIXEL_SIZE; // 12
 
 class Obstacle
 {
+public:
+    enum Behaviour_e
+    {
+        NONE = 0,
+        COIN = 1,
+    };
+    
+    struct Obstacle_s
+    {
+        bool bIsObstacle;
+        Behaviour_e Behaviour;
+        
+        Obstacle_s()
+        : bIsObstacle(false), Behaviour(NONE){}
+        
+        void SetObstacle(bool flag, Behaviour_e behav);
+    };
+    
 private:
     static Obstacle *m_pInstance;
     
 public:
-    std::vector<std::vector<bool>> m_bIsObstacle;
+    std::vector<std::vector<Obstacle_s>> m_bIsObstacle;
 
 private:
     Obstacle();
@@ -28,10 +46,10 @@ public:
 
     inline const bool IsEmptyFramePixel(const unsigned short X, const unsigned short Y) const
     {
-        return m_bIsObstacle[X][Y];
+        return m_bIsObstacle[X][Y].bIsObstacle;
     }
     
-    inline void PushLastColumnPixels(const std::vector<bool> &ColPixels)
+    inline void PushLastColumnPixels(const std::vector<Obstacle_s> &ColPixels)
     {
         m_bIsObstacle.push_back(ColPixels);
     }
@@ -41,8 +59,5 @@ public:
         m_bIsObstacle.erase(m_bIsObstacle.begin());
     }
     
-    inline void SetObstacle(const unsigned short X, const unsigned short Y)
-    {
-        m_bIsObstacle[X][Y] = true;
-    }
+    void SetObstacle(const unsigned short X, const unsigned short Y, Behaviour_e Behaviour);
 };

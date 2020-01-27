@@ -22,17 +22,31 @@ bool IsHollow(int Index)
             ((Index >= HOLLOW_POS_3) && (Index <= HOLLOW_POS_3 + HOLLOW_WIDTH)));
 };
 
+void Obstacle::Obstacle_s::SetObstacle(bool flag, Behaviour_e behaviour)
+{
+    bIsObstacle = flag;
+    Behaviour = behaviour;
+}
+
+
 Obstacle::Obstacle()
 {
     for (int i = 0; i < FRAME_PIXEL_ARRAY_X; i++)
     {
-        std::vector<bool> colPixels;
+        std::vector<Obstacle_s> colPixels;
+        Obstacle_s Obstacle;
         for (int j = 0; j < FRAME_PIXEL_ARRAY_Y; j++)
         {
             if((GROUND_LEVEL <= j) && (!IsHollow(i)))
-                colPixels.push_back(true);
+            {
+                Obstacle.SetObstacle(true, NONE);
+                colPixels.push_back(Obstacle);
+            }
             else
-                colPixels.push_back(false);
+            {
+                Obstacle.SetObstacle(false, NONE);
+                colPixels.push_back(Obstacle);
+            }
         }
         m_bIsObstacle.push_back(colPixels);
     }
@@ -62,4 +76,11 @@ void Obstacle::ReleaseInstance()
         delete m_pInstance;
     }
 }
+
+void Obstacle::SetObstacle(const unsigned short X, const unsigned short Y, Behaviour_e Behaviour)
+{
+    m_bIsObstacle[X][Y].bIsObstacle = true;
+    m_bIsObstacle[X][Y].Behaviour = Behaviour;
+}
+
 
