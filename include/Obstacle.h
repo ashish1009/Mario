@@ -17,24 +17,34 @@ public:
     {
         NONE = 0,
         COIN = 1,
+        ONE_UP = 2,
+        INC_FIRE = 3,
+    };
+    
+    enum Ability_e
+    {
+        BONUS = 0,
+        BREAKABLE = 1,
+        FREEZ = 2,
     };
     
     struct Obstacle_s
     {
         bool bIsObstacle;
         Behaviour_e Behaviour;
+        Ability_e Ability;
         
         Obstacle_s()
-        : bIsObstacle(false), Behaviour(NONE){}
+        : bIsObstacle(false), Behaviour(NONE), Ability(BONUS) {}
         
-        void SetObstacle(bool flag, Behaviour_e behav);
+        void SetObstacle(bool flag, Behaviour_e behaviour, Ability_e ability);
     };
     
 private:
     static Obstacle *m_pInstance;
     
 public:
-    std::vector<std::vector<Obstacle_s>> m_bIsObstacle;
+    std::vector<std::vector<Obstacle_s>> m_Obstacle;
 
 private:
     Obstacle();
@@ -46,18 +56,18 @@ public:
 
     inline const bool IsEmptyFramePixel(const unsigned short X, const unsigned short Y) const
     {
-        return m_bIsObstacle[X][Y].bIsObstacle;
+        return m_Obstacle[X][Y].bIsObstacle;
     }
     
     inline void PushLastColumnPixels(const std::vector<Obstacle_s> &ColPixels)
     {
-        m_bIsObstacle.push_back(ColPixels);
+        m_Obstacle.push_back(ColPixels);
     }
     
     inline void PopFirstColumnPixels()
     {
-        m_bIsObstacle.erase(m_bIsObstacle.begin());
+        m_Obstacle.erase(m_Obstacle.begin());
     }
     
-    void SetObstacle(const unsigned short X, const unsigned short Y, Behaviour_e Behaviour);
+    void SetObstacle(const unsigned short X, const unsigned short Y, Behaviour_e Behaviour, Ability_e Ability);
 };

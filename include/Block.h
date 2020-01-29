@@ -6,7 +6,7 @@
 class Block
 {
 private:
-    static inline const std::string BLOCK_IMG_PATH = "Graphics/Block.png";
+    static inline const std::string BLOCK_IMG_PATH = "Graphics/Item.png";
     static const unsigned short SQUARE_BLOCK_SIZE = 16;
 
     TileMap m_Tile;

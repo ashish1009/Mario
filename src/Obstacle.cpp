@@ -22,10 +22,11 @@ bool IsHollow(int Index)
             ((Index >= HOLLOW_POS_3) && (Index <= HOLLOW_POS_3 + HOLLOW_WIDTH)));
 };
 
-void Obstacle::Obstacle_s::SetObstacle(bool flag, Behaviour_e behaviour)
+void Obstacle::Obstacle_s::SetObstacle(bool flag, Behaviour_e behaviour, Ability_e ability)
 {
     bIsObstacle = flag;
     Behaviour = behaviour;
+    Ability = ability;
 }
 
 
@@ -39,16 +40,16 @@ Obstacle::Obstacle()
         {
             if((GROUND_LEVEL <= j) && (!IsHollow(i)))
             {
-                Obstacle.SetObstacle(true, NONE);
+                Obstacle.SetObstacle(true, NONE, FREEZ);
                 colPixels.push_back(Obstacle);
             }
             else
             {
-                Obstacle.SetObstacle(false, NONE);
+                Obstacle.SetObstacle(false, NONE, FREEZ);
                 colPixels.push_back(Obstacle);
             }
         }
-        m_bIsObstacle.push_back(colPixels);
+        m_Obstacle.push_back(colPixels);
     }
     LogDebug(BIT_OBSTACLE, "Obstacle::Obstacle(), Constructor !! \n");
 }
@@ -77,10 +78,11 @@ void Obstacle::ReleaseInstance()
     }
 }
 
-void Obstacle::SetObstacle(const unsigned short X, const unsigned short Y, Behaviour_e Behaviour)
+void Obstacle::SetObstacle(const unsigned short X, const unsigned short Y, Behaviour_e Behaviour, Ability_e Ability)
 {
-    m_bIsObstacle[X][Y].bIsObstacle = true;
-    m_bIsObstacle[X][Y].Behaviour = Behaviour;
+    m_Obstacle[X][Y].bIsObstacle = true;
+    m_Obstacle[X][Y].Behaviour = Behaviour;
+    m_Obstacle[X][Y].Ability = Ability;
 }
 
 

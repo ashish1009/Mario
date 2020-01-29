@@ -45,6 +45,7 @@ private:
     Obstacle *m_pObstacle;
     unsigned short m_PlayerImg;
     unsigned short m_JumpHeight;
+    unsigned short m_JumpPos;
 
 private:
     void Init();

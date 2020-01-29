@@ -98,18 +98,15 @@ void Mario::MoveBgAt()
 
 void Mario::DrawPlayer()
 {
-//    if(Entity::DYING != m_pPlayer->GetBehaviour())
-    {
-        m_pPlayer->SetNewPosition();
-        m_pPlayer->LoadPlayerImage();
-        m_pPlayer->DrawPlayer(m_WinMario);
-    }
+    m_pPlayer->SetNewPosition();
+    m_pPlayer->LoadPlayerImage();
+    m_pPlayer->DrawPlayer(m_WinMario);
 }
 
 void Mario::DrawBlock()
 {
 #define BLOCK_Y 150
-#define BLOCK_X 100
+#define BLOCK_X 250
     if(0 < (BLOCK_X - m_FramePosition))
     {
         Entity::Position_s Position;

@@ -7,7 +7,7 @@
 Player *Player::m_pInstance = nullptr;
 
 Player::Player()
-    : m_Vector(PLAYER_WIDTH, PLAYER_HEIGHT_SMALL), m_PrintSize(PLAYER_WIDTH * PLAYER_X_SCALE_FACTOR, PLAYER_HEIGHT_SMALL << PLAYER_Y_SCALE_FACTOR) ,m_PlayerImg(0), m_JumpHeight(DEFAULT_JUMP_HEIGHT)
+: m_Vector(PLAYER_WIDTH, PLAYER_HEIGHT_SMALL), m_PrintSize(PLAYER_WIDTH * PLAYER_X_SCALE_FACTOR, PLAYER_HEIGHT_SMALL << PLAYER_Y_SCALE_FACTOR) ,m_PlayerImg(0), m_JumpHeight(DEFAULT_JUMP_HEIGHT), m_JumpPos(0)
 {
 //    IncSize();
     SetPosition(PLAYER_BASE_X, PLAYER_BASE_Y - 50);
@@ -142,11 +142,14 @@ void Player::JumpPlayer()
     if(!IsCollision())
     {
         SetPlayerImg(PlayerImgIdx::JUMP);
-        if(m_Position.Y > (PLAYER_BASE_Y - m_JumpHeight))
+//        if(m_Position.Y > (PLAYER_BASE_Y - m_JumpHeight))
+        if(m_JumpPos < m_JumpHeight)
         {
+            m_JumpPos += JUMP_FACTOR;
             SetPosition(m_Position.X, m_Position.Y - JUMP_FACTOR);
         }
-        else if(m_Position.Y <= (PLAYER_BASE_Y - m_JumpHeight))
+//        else if(m_Position.Y <= (PLAYER_BASE_Y - m_JumpHeight))
+        else if(m_JumpPos >= m_JumpHeight)
         {
             SetBehaviour(AIR);
         }
@@ -203,6 +206,7 @@ bool Player::IsCollision()
                     if(NUM_PIXEL_FOR_LANDING < NumPixelLanded)
                     {
                         LogInfo(BIT_PLAYER,"Landing Collision %d\n", NumPixelLanded);
+                        m_JumpPos = 0;
                         m_Behaviour = GROUND;
                         return true;
                     }
@@ -261,6 +265,7 @@ bool Player::IsCollision()
                     {
                         LogInfo(BIT_PLAYER, "Jump Collision \n");
                         SetBehaviour(AIR);
+                        
                         return true;
                     }
                 }

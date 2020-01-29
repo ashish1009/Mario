@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include "Player.h"
-#include "Block.h"
+#include "LinkedList.h"
 #include "Graphics.h"
 
 class Mario : public Graphics
@@ -21,6 +21,7 @@ private:
     Player *m_pPlayer;
     Obstacle *m_pObstacle;
     Block m_Block;
+    List m_lBlock;
     
     float m_FramePosition;
     unsigned int m_Score;

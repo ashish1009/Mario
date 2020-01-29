@@ -12,7 +12,8 @@ enum FileBitMask_e
     BIT_TILEMAP = 4,
     BIT_BLOCK = 5,
     BIT_OBSTACLE = 6,
+    BIT_LIST = 7,
 
     /* third Nibble */
-
+//    BIT_ = 
 };

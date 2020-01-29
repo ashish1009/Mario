@@ -7,6 +7,9 @@ MARIO_INC = include/
 LOGGER_SRC = Logger/src/
 LOGGER_INC = Logger/include/
 
+LINKED_LIST_SRC = LinkedList/src/
+LINKED_LIST_INC = LinkedList/include/
+
 SFML_GRAPHICS = -lsfml-graphics
 SFML_SYSTEM = -lsfml-system
 SFML_WINDOW = -lsfml-window
@@ -22,6 +25,8 @@ SRC += $(MARIO_SRC)Mario.cpp
 SRC += $(MARIO_SRC)TileMap.cpp
 SRC += $(MARIO_SRC)Obstacle.cpp
 SRC += $(MARIO_SRC)Block.cpp
+
+SRC += $(LINKED_LIST_SRC)LinkedList.cpp
 
 SRC += $(LOGGER_SRC)Logger.cpp
 
