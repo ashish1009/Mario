@@ -59,16 +59,18 @@ void Mario::PlayGame() {
                     break;
                 
                 case sf::Event::KeyPressed:
+                    if (m_MarioEvent.key.code == sf::Keyboard::LShift) {
+                        m_pPlayer->SetState(Entity::JUMPING);
+                    }
                     if (m_MarioEvent.key.code == sf::Keyboard::Right) {
-                        
-                        for (int i = 0;  i < 8; i++) {
-                            if (m_FramePosition < 3130) {
-                                m_FramePosition ++;
-                                Obstacle::GetInstance()-> PopFirstColumnPixels();
-                                Obstacle::GetInstance()->PushLastColumnPixels();
-                            }
-                        }
-//                        m_pPlayer->Move(Entity::RIGHT, m_FramePosition);
+//                        for (int i = 0; i < 8; i++) {
+//                            if (m_FramePosition < 3130) {
+//                                m_FramePosition ++;
+//                                Obstacle::GetInstance()-> PopFirstColumnPixels();
+//                                Obstacle::GetInstance()->PushLastColumnPixels();
+//                            }
+//                        }
+                        m_pPlayer->Move(Entity::RIGHT, m_FramePosition);
                     }
                     else if (m_MarioEvent.key.code == sf::Keyboard::Left) {
                         m_pPlayer->Move(Entity::LEFT, m_FramePosition);
@@ -153,8 +155,7 @@ void Mario::DrawBlock() {
 ///         m_WinMario get Updated
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Mario::DrawPlayer() {
-    m_pPlayer->LandPlayer();
-
+    m_pPlayer->CheckPlayerState();
     if (EXIT_FAILURE == m_pPlayer->LoadPlayerImage(m_WinMario)) {
         LogError(BIT_MARIO, " Mario::DrawPlayer() : Can Not Load Player Image \n");
         m_WinMario.close();

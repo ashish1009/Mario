@@ -1,9 +1,11 @@
 #include "Player.h"
 #include "Logger.h"
 
-const int PLAYER_START_X = 40;
-const int FRAME_MOVE_START_PLAYER_X = 80; ///Player Position after which background will move left
-const int PLAYER_POS_X_STOP = 112; /// Player Position after witch only Background will move
+const short PLAYER_START_X = 40;
+const short FRAME_MOVE_START_PLAYER_X = 80;     /// Player Position after which background will move left
+const short PLAYER_POS_X_STOP = 112;            /// Player Position after witch only Background will move
+const short MAX_FRAME_MOVE = 3130;              /// Frame can max move to
+const short MAX_JUMP_HEIGHT = 64;
 
 Player *Player::m_pInstance = nullptr;
 
@@ -11,7 +13,8 @@ Player *Player::m_pInstance = nullptr;
 /// Brief      : Constructor of Player Class
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Player::Player()
-: m_TileVector(PLAYER_WIDTH, PLAYER_HEIGHT_SMALL), m_PlayerImgIdx(PlayerImgIdx::STAND) {
+: m_TileVector(PLAYER_WIDTH, PLAYER_HEIGHT_SMALL), m_PlayerImgIdx(PlayerImgIdx::STAND),
+    m_PlayerMoveIdx(0), m_JumpFactor(0) {
     SetPosition(PLAYER_START_X, 150);
 //    SetSize(BIG);
 //    m_TileVector = {PLAYER_WIDTH, PLAYER_HEIGHT_BIG};
@@ -75,20 +78,49 @@ int Player::LoadPlayerImage(sf::RenderWindow &winMario) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/// Brief      : if Player State is AIR then Free fall the player
+/// Brief      : Check state of Player
+///          if AIR then Free fall if jumping then jump
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Player::LandPlayer() {
-    if (AIR == m_State) {
+void Player::CheckPlayerState() {
+    if (JUMPING == m_State) {
+        if (MAX_JUMP_HEIGHT < m_JumpFactor) {
+            SetState(AIR);
+        }
+        else {
+            for (int i = 0; i < m_Speed; i++) {
+                if (!IsCollision()) {
+                    m_JumpFactor++;
+                    SetPosition(m_Position.X, m_Position.Y - 1);
+                }
+                else {
+                    SetState(AIR);
+                    break;
+                }
+            }
+        }
+    }
+    else if (AIR == m_State) {
         for (int i = 0; i < m_Speed; i++) {
             if (!IsCollision()) {
                 SetPosition(m_Position.X, m_Position.Y + 1);
             }
             else {
-                SetState(GROUND);
+                LandPlayer();
                 break;
             }
         }
     }
+    else {
+        SetState(AIR);
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Brief      :  Lands the player if collision
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Player::LandPlayer() {
+    SetState(GROUND);
+    m_JumpFactor = 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -156,12 +188,14 @@ void Player::Move(Entity::Direction_e direction, int &frameX) {
                         SetPosition(m_Position.X + 1, m_Position.Y);
                     }
                     if (FRAME_MOVE_START_PLAYER_X < m_Position.X) {
-                        frameX += 8;
-                        /// Remove First column pixels after moving that frame right
-                        Obstacle::GetInstance()-> PopFirstColumnPixels(); ///As Obstacle is Singleton class no need to make any object
-                        
-                        /// As One column is removed we need to add another at end;
-                        Obstacle::GetInstance()->PushLastColumnPixels();
+                        if (MAX_FRAME_MOVE > frameX) {
+                            frameX += 1;
+                            /// Remove First column pixels after moving that frame right
+                            Obstacle::GetInstance()-> PopFirstColumnPixels(); ///As Obstacle is Singleton class no need to make any object
+                            
+                            /// As One column is removed we need to add another at end;
+                            Obstacle::GetInstance()->PushLastColumnPixels();
+                        }
                     }
                 }
             }

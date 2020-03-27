@@ -19,6 +19,7 @@ const short gStepColIdx[MAX_STEP] = {
     148, 149, 150, 151, 152,
     155, 156, 157, 158,
     181, 182, 183, 184, 185, 186, 187, 188, 189, 198};
+
 const short gStepNum[MAX_STEP] = {1, 2, 3, 4, 4, 3, 2, 1, 1, 2, 3, 4, 4, 4, 3, 2, 1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 1};
 
 const short gRow5ColIdx[MAX_BLOCKS] = {
@@ -86,6 +87,21 @@ const Obstacle::Abilities_e gRow9Ability[MAX_BLOCKS] = {
 const short gPipeRowIdx = 12;
 const short gBaseGroundRowIdx = gPipeRowIdx + 1;
 
+void Obstacle::SetObstaclePixels(const int row, const int col) {
+    float tileSize = (BLOCK_SIZE == GetBlockSizeAt(row, col) ? BLOCK_SIZE : BLOCK_SIZE * 2); //  TODO;
+    float blockX = (col * BLOCK_SIZE);
+    float blockY = (row * BLOCK_SIZE) + (BLOCK_SIZE >> 1);  /// Shift for lasg half ground block
+    
+    
+    for (int i = blockY - BLOCK_SIZE; i < blockY; i++) {
+        for (int j = blockX; j < blockX + tileSize; j++) {
+            if (0 <= i) {
+                SetObstacle(i, j, GetBlockTypeAt(row, col), GetBlockAbilityAt(row, col));
+            }
+        }
+    }
+}
+
 void Obstacle::GetBlock(const int row, const int col) {
     m_BlockType[row][col].size = BLOCK_SIZE;
     m_BlockType[row][col].behaviour = NO_BEHAV;
@@ -100,6 +116,7 @@ void Obstacle::GetBlock(const int row, const int col) {
             }
         }
         m_BlockType[row][col].behaviour = BASE;
+        SetObstaclePixels(row, col);
         return;
     } ///if ((gBaseGroundRowIdx == row || (gBaseGroundRowIdx + 1) == row))
     
@@ -111,10 +128,12 @@ void Obstacle::GetBlock(const int row, const int col) {
                     if (k == gPipeSize[i] - 1) {
                         m_BlockType[row - k][col].behaviour = PIPE;
                         m_BlockType[row - k][col].size = gPipeSize[i] * BLOCK_SIZE;
+                        SetObstaclePixels(row - k, col);
                     }
                     else {
                         m_BlockType[row - k][col].behaviour = PIPE_BASE;
                         m_BlockType[row - k][col].size = gPipeSize[i] * BLOCK_SIZE;
+                        SetObstaclePixels(row - k, col);
                     }
                 }
                 return;
@@ -125,6 +144,7 @@ void Obstacle::GetBlock(const int row, const int col) {
             if (gStepColIdx[i] == col) {
                 for (int k = 0; k < gStepNum[i]; k++) {
                     m_BlockType[row - k][col].behaviour = STEP;
+                    SetObstaclePixels(row - k, col);
                 }
             }
         }
@@ -136,6 +156,7 @@ void Obstacle::GetBlock(const int row, const int col) {
             if (col == gRow5ColIdx[i]) {
                 m_BlockType[row][col].behaviour = gRow5Behaviour[i];
                 m_BlockType[row][col].abilities = gRow5Ability[i];
+                SetObstaclePixels(row, col);
                 return;
             }
         }
@@ -147,6 +168,7 @@ void Obstacle::GetBlock(const int row, const int col) {
             if (col == gRow9ColIdx[i]) {
                 m_BlockType[row][col].behaviour = gRow9Behaviour[i];
                 m_BlockType[row][col].abilities = gRow9Ability[i];
+                SetObstaclePixels(row, col);
                 return;
             }
         }

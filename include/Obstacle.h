@@ -78,8 +78,9 @@ public:
     void PushLastColumnPixels();
     void PopFirstColumnPixels();
     
-    void GetBlock(const int row, const int col);
+    void SetObstaclePixels(const int row, const int col);
     
+    void GetBlock(const int row, const int col);
     void SetObstacle(const int X, const int Y, Behaviour_e behaviour, Abilities_e ability);
     
     Behaviour_e GetBlockTypeAt(const int i, const int j) const;

@@ -36,6 +36,7 @@ private:
     
     short m_PlayerImgIdx;
     short m_PlayerMoveIdx;
+    short m_JumpFactor;
 
 private:
     Player();
@@ -46,8 +47,9 @@ public:
     static void ReleaseInstance();
     
     int LoadPlayerImage(sf::RenderWindow &winMario);
-    void LandPlayer();
+    void CheckPlayerState();
     bool IsCollision();
+    void LandPlayer();
     void Move(Direction_e direction, int &frameX);
     
     inline void SetPlayerImageIdx(const short playerImgIdx) {
