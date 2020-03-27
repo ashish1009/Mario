@@ -1,110 +1,130 @@
 #pragma once
 
 #include <iostream>
+#include "Common.h"
 
-const std::string ResourcePath = "/Users/ashish./Documents/XCode/Mario/Mario/Resources/";
-
-class Entity
-{
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Entity Class
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class Entity {
 public:
-    struct Position_s
-    {
-        float X;
-        float Y;
-
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// Structure to define position of Entity
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    struct Position_s {
+        float X, Y;
+        
         Position_s()
-        : X(0), Y(0) {}
-
+        : X(0.0f), Y(0.0f) {}
+        
         Position_s(const float x, const float y)
         : X(x), Y(y) {}
-        
-        void SetPostion(const float X, const float Y)
-        {
-            this->X = X;
-            this->Y = Y;
-        }
-    };
 
-    enum Size_e
-    {
+    };
+    
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// Enum to define Size of Entity
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    enum Size_e : short {
         SMALL = 0,
-        BIG = 1,
+        BIG = 1
     };
-
-    enum Direction_e
-    {
+    
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// Enum to define Direction of moving Entity
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    enum Direction_e : short {
         LEFT = 0,
-        RIGHT = 1,
-        UP = 2,
-        DOWN = 3,
+        RIGHT = 1
     };
     
-    enum Abilities_e
-    {
-        REGULAR = 0,
-        REGULAR_PLAYER_2 = 1,
-        FIRABLE = 2,
-        INVISIBLE = 3,
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// Enum to define Abiloty of Entity
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    enum Ability_e : short {
+        P1_REGULAR = 0, // No Special Ability for Player 1
+        P2_REGULAR = 1, // No Special Ability for Player 2
+        FIRABLE = 2,    // Entity can Fire
+        INVISIBLE = 3   // Entity can never be Dead
     };
     
-    enum Behaviour_e
-    {
-        AIR = 0,
-        JUMPING = 1,
-        GROUND = 2,
-        DYING = 3,
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// Enum to define Behaviour of Entity
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    enum State_e : short {
+        AIR = 0,        // When Entity is at Free fall
+        JUMPING = 1,    // When ENtity is Jumping
+        GROUND = 2,     // When Entity is Landed at some place
+        DYING = 3,      // When Entity is Dying
     };
-
-    typedef unsigned short Speed;
-    static const unsigned short DEFAULT_SPEED = 2;
-    static const unsigned short MAX_SPEED = 2;
-
-public:
+    
+    typedef short Speed;
+    static const short DEFAULT_SPEED = 2;
+    
+protected:
     Position_s m_Position;
     Direction_e m_Direction;
-    Abilities_e m_Ability;
+    Ability_e m_Ability;
     Size_e m_Size;
     Speed m_Speed;
-    Behaviour_e m_Behaviour;
-
+    State_e m_State;
+    
 public:
     Entity();
     ~Entity();
-
-    void SetPosition(const float X, const float Y);
-    void SetDirection(const Direction_e Direction);
-    void SetSize(const Size_e Size);
-    void SetAbility(const Abilities_e Ability);
-    void SetSpeed(const Speed speed);
-    void SetBehaviour(const Behaviour_e Behaviour);
     
-    inline const Position_s &GetPosition() const
-    {
+    ///////////////////////////////////////////////////////////////
+    ///     Get Entity
+    ///////////////////////////////////////////////////////////////
+    inline const Position_s &GetPosition() const {
         return m_Position;
     }
 
-    inline const Direction_e GetDirection() const
-    {
+    inline const Direction_e GetDirection() const {
         return m_Direction;
     }
-    
-    inline const Abilities_e GetAbility() const
-    {
+
+    inline const Ability_e GetAbility() const {
         return m_Ability;
     }
 
-    inline const Size_e GetSize() const
-    {
+    inline const Size_e GetSize() const {
         return m_Size;
     }
 
-    inline const Speed GetSpeed() const
-    {
+    inline const Speed GetSpeed() const {
         return m_Speed;
     }
-    
-    inline const Behaviour_e GetBehaviour() const
-    {
-        return m_Behaviour;
+
+    inline const State_e GetState() const {
+        return m_State;
+    }
+
+    ///////////////////////////////////////////////////////////////
+    ///     Set Entity
+    ///////////////////////////////////////////////////////////////
+    inline void SetPosition(const float X, const float Y) {
+        m_Position.X = X;
+        m_Position.Y = Y;
+    }
+
+    inline void SetDirection(const Direction_e direction) {
+        m_Direction = direction;
+    }
+
+    inline void SetAbility(const Ability_e ability) {
+        m_Ability = ability;
+    }
+
+    inline void SetSize(const Size_e size) {
+        m_Size = size;
+    }
+
+    inline void SetSpeed(const Speed speed) {
+        m_Speed = speed;
+    }
+
+    inline void SetState(const State_e state) {
+        m_State = state;
     }
 };

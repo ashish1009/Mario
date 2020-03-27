@@ -1,67 +1,56 @@
 #include "Block.h"
 #include "Logger.h"
 #include "Obstacle.h"
+#include <math.h>
+
+#define NUM_SCORE_BLOCK_BLINK 3
+#define BLINK_DELAY 40
 
 Block::Block()
-: m_BlockImg(0), m_Vector(SQUARE_BLOCK_SIZE, SQUARE_BLOCK_SIZE)
-{
-    LogInfo(BIT_BLOCK, "Block::Block(), Constructor !!!!! \n");
+: m_BlockIdxX(0) {
 }
 
-Block::~Block()
-{
-    LogInfo(BIT_BLOCK, "Block::~Block(), Destructor !!!!! \n");
+Block::~Block() {
 }
-
-int Block::LoadBlockImage(Entity::Position_s Position)
-{
-#define BLOCK_PRINT_SIZE 64
-    TileMap::PrintControl_s PrintControl;
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Brief      : Load Block Image and sst all pixel as obstacle
+///         m_WinMario get Updated
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+int Block::LoadBlockImage(sf::RenderWindow &m_WinMario, const short frameX, const short row, const short col) {
+    float blockX = (col * BLOCK_SIZE) - frameX;
+    float blockY = (row * BLOCK_SIZE) + (BLOCK_SIZE >> 1);  /// Shift for lasg half ground block
     
-    {
-#define NUM_SCORE_BLOCK_BLINK 3
-        static short BlockImgIdx = 0;
-        BlockImgIdx++;
-        
-        m_BlockImg = (BlockImgIdx / 10) % NUM_SCORE_BLOCK_BLINK;
-    }
+    TileMap::PrintControl_s printControl;
+    Entity::Position_s blockPosition(blockX, blockY);
     
-    {
-        Obstacle *pObstacle = Obstacle::GetInstance();
+    m_BlockIdxX = 0;
+    
+    Obstacle *pObstacle = Obstacle::GetInstance();
+    float tileSize = (BLOCK_SIZE == pObstacle->GetBlockSizeAt(row, col) ? BLOCK_SIZE : BLOCK_SIZE * 2); //  TODO;
 
-        short X = (short)(BLOCK_PRINT_SIZE * WIN_WIDTH) / 1000;
-        short Y = (short)(BLOCK_PRINT_SIZE * WIN_HEIGHT) / 1000;
-
-        for (short i = Position.X; i <= (Position.X + X); i++)
-        {
-            for (short j = (Position.Y - Y); j <= Position.Y; j++)
-            {
-                pObstacle->SetObstacle(i, j, Obstacle::COIN, Obstacle::BONUS);
+    for (int i = blockPosition.Y - BLOCK_SIZE; i < blockPosition.Y; i++) {
+        for (int j = blockPosition.X; j < blockPosition.X + tileSize; j++) {
+            if (0 <= i) {
+                pObstacle->SetObstacle(i, j, pObstacle->GetBlockTypeAt(row, col), pObstacle->GetBlockAbilityAt(row, col));
             }
         }
     }
     
-    PrintControl.TileSet = ResourcePath + BLOCK_IMG_PATH;
-    PrintControl.Position = Position;
-    PrintControl.ImgY = 5 * SQUARE_BLOCK_SIZE; //  TODO : chnage dynamicllly for other obstacles
-    PrintControl.Tile = m_BlockImg;
-    PrintControl.TileSize = m_Vector;
-    PrintControl.PrintSize = {BLOCK_PRINT_SIZE, BLOCK_PRINT_SIZE};
-    PrintControl.bInverted = false;
-
-    if (!m_Tile.Load(PrintControl))
-        return EXIT_FAILURE;
+    printControl.tileSet = ResourcePath + BLOCK_IMG_PATH;
+    printControl.position = blockPosition;
+    printControl.imgY = pObstacle->GetBlockTypeAt(row, col) * BLOCK_SIZE;
+    printControl.tile = m_BlockIdxX;
+    printControl.tileSize = sf::Vector2f(tileSize, BLOCK_SIZE);
+    printControl.bInverted = false;
     
+    if (!m_Tile.Load(printControl)) {
+        LogError (BIT_BLOCK, "Block::LoadBlockImage() : Can Not Load Block Image \n");
+        return EXIT_FAILURE;
+    }
+    
+    m_BlockView.reset(sf::FloatRect(0.f, 0.f, WORLD_VIEW_WIDTH, WORLD_VIEW_HEIGHT));
+    m_WinMario.setView(m_BlockView);
+    m_WinMario.draw(m_Tile);
+
     return EXIT_SUCCESS;
 }
-
-void Block::DrawBlock(sf::RenderWindow &m_WinMario) const
-{
-    sf::View view2;
-    m_WinMario.setView(view2);
-    m_WinMario.draw(m_Tile);
-}
-
-
-// 100 - 125
-// 136 - 150

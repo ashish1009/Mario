@@ -1,9 +1,16 @@
 #pragma once
+#include "Obstacle.h"
 
-#include <iostream>
+/// Path for Images used in Game
+const std::string ResourcePath = "/Users/ashish./Documents/XCode/Mario/Mario/Resources/";
 
-static const unsigned short WIN_HEIGHT = 224;
-static const unsigned short WIN_WIDTH = 400;
-static const unsigned short LEVEL_1_WIDTH = 3392;
+/// Window Size Factro From World View
+const short WINDOW_WORLD_FACTOR = 4;
 
-const unsigned short GROUND_LEVEL = 200;
+/// Mario World View size WORLD_VIEW_WIDTH X WORLD_VIEW_HEIGHT
+const short WORLD_VIEW_HEIGHT = 224;
+const short WORLD_VIEW_WIDTH = 256;
+
+/// Window Pixels WIN_WIDTH X WIN_HEIGHT
+const short WIN_HEIGHT = WORLD_VIEW_HEIGHT * 4;
+const short WIN_WIDTH = WORLD_VIEW_WIDTH * 4;

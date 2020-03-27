@@ -1,0 +1,167 @@
+#include "Obstacle.h"
+
+const short MAX_HOLLOW_BLOCK = 7;
+const short MAX_PIPE = 6;
+const short MAX_STEP = 27;
+
+const short MAX_BLOCKS = 21;
+
+const short gRow9ForBlock = 9;
+const short gRow5ForBlock = 5;
+
+/// Constanct for defininging specific Block
+const short gHollowColIdx[MAX_HOLLOW_BLOCK] = {69, 70, 86, 87, 88, 153, 154};
+const short gPipeColIdx[MAX_PIPE] = {28, 38, 46, 57, 163, 179};
+const short gPipeSize[MAX_PIPE] = {2, 3, 4, 4, 2, 2};
+const short gStepColIdx[MAX_STEP] = {
+    134, 135, 136, 137,
+    140, 141, 142, 143,
+    148, 149, 150, 151, 152,
+    155, 156, 157, 158,
+    181, 182, 183, 184, 185, 186, 187, 188, 189, 198};
+const short gStepNum[MAX_STEP] = {1, 2, 3, 4, 4, 3, 2, 1, 1, 2, 3, 4, 4, 4, 3, 2, 1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 1};
+
+const short gRow5ColIdx[MAX_BLOCKS] = {
+    22,
+    80, 81, 82, 83, 84, 85, 86, 87,
+    91, 92, 93, 94,
+    109,
+    121, 122, 123,
+    128, 129, 130, 131};
+
+const Obstacle::Behaviour_e gRow5Behaviour[MAX_BLOCKS] = {
+    Obstacle::BONUS,
+    Obstacle::BRICK, Obstacle::BRICK, Obstacle::BRICK, Obstacle::BRICK, Obstacle::BRICK, Obstacle::BRICK, Obstacle::BRICK, Obstacle::BRICK,
+    Obstacle::BRICK, Obstacle::BRICK, Obstacle::BRICK, Obstacle::BONUS,
+    Obstacle::BONUS,
+    Obstacle::BRICK, Obstacle::BRICK, Obstacle::BRICK,
+    Obstacle::BRICK, Obstacle::BONUS, Obstacle::BONUS, Obstacle::BRICK
+};
+
+const Obstacle::Abilities_e gRow5Ability[MAX_BLOCKS] = {
+    Obstacle::COIN,
+    Obstacle::NO_ABILITY, Obstacle::NO_ABILITY, Obstacle::NO_ABILITY, Obstacle::NO_ABILITY, Obstacle::NO_ABILITY, Obstacle::NO_ABILITY, Obstacle::NO_ABILITY,
+    Obstacle::NO_ABILITY, Obstacle::FIRE_BONUS, Obstacle::NO_ABILITY, Obstacle::STAR_BONUS,
+    Obstacle::FIRE_BONUS,
+    Obstacle::NO_ABILITY, Obstacle::NO_ABILITY, Obstacle::NO_ABILITY,
+    Obstacle::NO_ABILITY, Obstacle::COIN, Obstacle::COIN, Obstacle::NO_ABILITY
+};
+
+const short gRow9ColIdx[MAX_BLOCKS] = {
+    16,
+    20, 21, 22, 23,
+    77, 78, 79,
+    94,
+    100, 101,
+    106, 109, 112,
+    118,
+    129, 130,
+    168, 169, 170, 171
+};
+
+const Obstacle::Behaviour_e gRow9Behaviour[MAX_BLOCKS] = {
+    Obstacle::BONUS,
+    Obstacle::BRICK, Obstacle::BONUS, Obstacle::BRICK, Obstacle::BONUS,
+    Obstacle::BRICK, Obstacle::BONUS, Obstacle::BRICK,
+    Obstacle::BRICK,
+    Obstacle::BRICK, Obstacle::BRICK,
+    Obstacle::BONUS, Obstacle::BONUS, Obstacle::BONUS,
+    Obstacle::BRICK,
+    Obstacle::BRICK, Obstacle::BRICK,
+    Obstacle::BRICK, Obstacle::BRICK, Obstacle::BONUS, Obstacle::BRICK,
+};
+
+const Obstacle::Abilities_e gRow9Ability[MAX_BLOCKS] = {
+    Obstacle::COIN,
+    Obstacle::NO_ABILITY, Obstacle::COIN, Obstacle::NO_ABILITY, Obstacle::MUSHROOM,
+    Obstacle::NO_ABILITY, Obstacle::FIRE_BONUS, Obstacle::NO_ABILITY,
+    Obstacle::NO_ABILITY,
+    Obstacle::NO_ABILITY, Obstacle::NO_ABILITY,
+    Obstacle::COIN, Obstacle::COIN, Obstacle::COIN,
+    Obstacle::NO_ABILITY,
+    Obstacle::NO_ABILITY, Obstacle::NO_ABILITY,
+    Obstacle::NO_ABILITY, Obstacle::NO_ABILITY, Obstacle::COIN, Obstacle::NO_ABILITY
+};
+
+const short gPipeRowIdx = 12;
+const short gBaseGroundRowIdx = gPipeRowIdx + 1;
+
+void Obstacle::GetBlock(const int row, const int col) {
+    m_BlockType[row][col].size = BLOCK_SIZE;
+    m_BlockType[row][col].behaviour = NO_BEHAV;
+    m_BlockType[row][col].abilities = NO_ABILITY;
+
+    if ((gBaseGroundRowIdx == row || (gBaseGroundRowIdx + 1) == row)) {
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////                 Base Ground and Hollow
+        for (int i = 0; i < MAX_HOLLOW_BLOCK; i++) {
+            if (gHollowColIdx[i] == col) {
+                m_BlockType[row][col].behaviour = BLANK;
+                return;
+            }
+        }
+        m_BlockType[row][col].behaviour = BASE;
+        return;
+    } ///if ((gBaseGroundRowIdx == row || (gBaseGroundRowIdx + 1) == row))
+    
+    else if (gPipeRowIdx == row) {
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////                 Piper
+        for (int i = 0; i < MAX_PIPE; i++) {
+            if (gPipeColIdx[i] == col) {
+                for (int k = 0; k < gPipeSize[i]; k++) {
+                    if (k == gPipeSize[i] - 1) {
+                        m_BlockType[row - k][col].behaviour = PIPE;
+                        m_BlockType[row - k][col].size = gPipeSize[i] * BLOCK_SIZE;
+                    }
+                    else {
+                        m_BlockType[row - k][col].behaviour = PIPE_BASE;
+                        m_BlockType[row - k][col].size = gPipeSize[i] * BLOCK_SIZE;
+                    }
+                }
+                return;
+            }
+        }
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////                 Steps
+        for (int i = 0; i < MAX_STEP; i++) {
+            if (gStepColIdx[i] == col) {
+                for (int k = 0; k < gStepNum[i]; k++) {
+                    m_BlockType[row - k][col].behaviour = STEP;
+                }
+            }
+        }
+    } /// wlse if (gPipeRowIdx == row)
+    
+    else if (gRow5ForBlock == row) {
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////                 Blocks for Row 5
+        for (int i = 0; i < MAX_BLOCKS; i ++) {
+            if (col == gRow5ColIdx[i]) {
+                m_BlockType[row][col].behaviour = gRow5Behaviour[i];
+                m_BlockType[row][col].abilities = gRow5Ability[i];
+                return;
+            }
+        }
+    }
+    
+    else if (gRow9ForBlock == row) {
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////                 Blocks for Row 9
+        for (int i = 0; i < MAX_BLOCKS; i ++) {
+            if (col == gRow9ColIdx[i]) {
+                m_BlockType[row][col].behaviour = gRow9Behaviour[i];
+                m_BlockType[row][col].abilities = gRow9Ability[i];
+                return;
+            }
+        }
+    }
+}
+
+void Obstacle::InitObstacles() {
+    for (int i = 0; i <= NUM_ROW; i++) {
+        for (int j = 0; j < NUM_COL; j++) {
+            GetBlock(i, j);
+        }
+    }
+//    m_BlockType[7][9].behaviour = Obstacle::BONUS;
+//    m_BlockType[7][31].behaviour = Obstacle::BONUS;
+}
+
+// 134, 135, 136, 137, 140, 141, 142, 143, 148, 149, 150, 151, 152, 155, 156, 157, 158, 182, 183, 184, 185, 186, 187, 188, 189, 190, 198
+// 1, 2, 3, 4, 4, 3, 2, 1, 1, 2, 3, 4, 4, 4, 3, 2, 1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 1

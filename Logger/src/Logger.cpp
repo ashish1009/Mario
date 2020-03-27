@@ -1,9 +1,12 @@
 #include <Logger.h>
 
-char *GetLogLevelString(LogLevel_e level)
-{
-    switch (level)
-    {
+Logger *Logger::m_LoggerInstance = nullptr;
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Brief      : Return the string (in words) the level of Log level
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+char *GetLogLevelString(LogLevel_e level) {
+    switch (level)     {
     case LOG_ERROR:
         return (char *)"ERROR ";
         break;
@@ -25,55 +28,61 @@ char *GetLogLevelString(LogLevel_e level)
     }
 }
 
-Logger *Logger::m_LoggerInstance = nullptr;
-
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Brief      : Constructor of logger
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Logger::Logger()
-    : m_LogLevel(LOG_ERROR), m_LogBitMask(0)
-{
-    std::cout << " [LOGGER] Logger::Logger(), Logger Constructor called with level " << m_LogLevel << " : " << GetLogLevelString(m_LogLevel) << " Bit Mask " << std::hex << m_LogBitMask << std::endl;
+    : m_LogLevel(LOG_ERROR), m_LogBitMask(0) {
+    std::cout << " [LOGGER] Logger::Logger(), Logger Constructor called with level " << m_LogLevel << "(" << GetLogLevelString(m_LogLevel) <<")" << ", Bit Mask " << std::hex << m_LogBitMask << std::endl;
 }
 
-Logger::~Logger()
-{
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Brief      : Destructor of logger
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+Logger::~Logger() {
     std::cout << " [LOGGER] Logger::~Logger(), Logger Destructor called " << std::endl;
 }
 
-Logger *Logger::GetLoggerInstance()
-{
-    if (nullptr == m_LoggerInstance)
-    {
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Brief      : Create new Instance for Logger.
+///              If alredy created then return the older Pointer
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+Logger *Logger::GetLoggerInstance() {
+    if (nullptr == m_LoggerInstance) {
         std::cout << " [LOGGER] Logger::GetLoggerInstance, Creating Logger Instance " << std::endl;
         m_LoggerInstance = new Logger;
     }
     return m_LoggerInstance;
 }
 
-void Logger::ReleaseInstance()
-{
-    if (nullptr != m_LoggerInstance)
-    {
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Brief      : Delete the created Logger Instance
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Logger::ReleaseInstance() {
+    if (nullptr != m_LoggerInstance) {
         std::cout << " [LOGGER] Logger::ReleaseInstance, Deleting Logger Instance " << std::endl;
         delete m_LoggerInstance;
     }
 }
 
-void Logger::SetLogLevel(LogLevel_e level)
-{
-    if ((LOG_DEBUG <= level) && (LOG_ERROR >= level))
-    {
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Brief      : Set the member function of LogLevel
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Logger::SetLogLevel(LogLevel_e level) {
+    if ((LOG_DEBUG <= level) && (LOG_ERROR >= level)) {
         std::cout << " [LOGGER] Logger::SetLogLevel(), Log level Set to " << level << std::endl;
         m_LogLevel = level;
     }
-    else
-    {
+    else {
         std::cout << "[LOGGER : ERROR] : Logger::SetLogLevel(), level " << level << " is out of range { " << LOG_DEBUG << ", " << LOG_ERROR << " }" << std::endl;
     }
 }
 
-void Logger::LOG(LogLevel_e level, const unsigned int mask, const char *fmt, ...)
-{
-    if ((m_LogLevel <= level) && ((m_LogBitMask >> mask) & 0x01))
-    {
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Brief      : Print the log according to log level and bit mask of file
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Logger::LOG(LogLevel_e level, const int mask, const char *fmt, ...) {
+    if ((m_LogLevel <= level) && ((m_LogBitMask >> mask) & 0x01)) {
         std::cout << "[ " << GetLogLevelString(level) << " ] ";
 
         va_list args;
@@ -83,8 +92,10 @@ void Logger::LOG(LogLevel_e level, const unsigned int mask, const char *fmt, ...
     }
 }
 
-void Logger::SetLogBitMask(const unsigned int mask)
-{
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Brief      : Set the member funcion of Log Bit MAsk
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Logger::SetLogBitMask(const int mask) {
     m_LogBitMask = mask;
     std::cout << " [LOGGER] Logger::SetLogBitMask(), Bit Mask set to : " << std::hex << m_LogBitMask << std::endl;
 }

@@ -2,49 +2,51 @@
 
 #include <iostream>
 #include "Player.h"
-#include "LinkedList.h"
-#include "Graphics.h"
 
-class Mario : public Graphics
-{
-private:
-    static const unsigned short MARIO_HEIGHT = 224;
-    static const unsigned short MARIO_WIDTH = 384;
-    static const unsigned short TIME_LIMIT = 400;
-    
+#include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
+#include <SFML/Window.hpp>
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Mario Class
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class Mario {
 private:
     sf::RenderWindow m_WinMario;
+    sf::Vector2u m_WinSize;
     sf::Event m_MarioEvent;
+    sf::Texture m_MarioTexture;
+    sf::Sprite m_MarioSprite;
+    sf::View m_MarioView;
+    sf::Font m_Font;
+    sf::Text m_Text;
+    sf::Clock m_Clock;
+    
     sf::Texture m_CoinScoreTexture;
     sf::Sprite m_CoinScoreSprite;
     
     Player *m_pPlayer;
     Obstacle *m_pObstacle;
-    Block m_Block;
-    List m_lBlock;
     
-    float m_FramePosition;
-    unsigned int m_Score;
-    unsigned short m_CoinCount;
-    unsigned short m_Level;
-    unsigned short m_Time;
+    int m_FramePosition;
+    int m_Score;
+    short m_CoinCount;
+    short m_Level;
+    short m_Time;
     
 private:
-    void MoveBgAt();
-    void DrawPlayer();
-    void DrawBlock();
-    void PrintContent();
-    void PrintText(const char *PrintStuff, unsigned short Variable, const float Xposition);
-    void ResetScreenAndPlayer();
+    inline void ResetScreen();
+    inline void SetTime();
     
-    void MovePlayer(Entity::Direction_e Direction)
-    {
-        m_pPlayer->Move(m_FramePosition, Direction);
-    }
-
+    void MoveBg();
+    void DrawBlock();
+    void DrawPlayer();
+    void PrintContent();
+    void PrintText(const char *printStuff, short variable, const float xPosition);
+    
 public:
-    int PlayGame();
-
+    void PlayGame();
+    
     Mario();
     ~Mario();
 };

@@ -2,22 +2,22 @@
 
 #include <iostream>
 #include "TileMap.h"
+#include "Common.h"
+#include <vector>
 
 class Block
 {
 private:
     static inline const std::string BLOCK_IMG_PATH = "Graphics/Item.png";
-    static const unsigned short SQUARE_BLOCK_SIZE = 16;
 
     TileMap m_Tile;
-    unsigned short m_BlockImg;
-    sf::Vector2<float> m_Vector;
+    sf::View m_BlockView;
+    
+    short m_BlockIdxX;
 
 public:
     Block();
     ~Block();
     
-    int LoadBlockImage(Entity::Position_s Position);
-    void DrawBlock(sf::RenderWindow &m_WinMario) const;
-    
+    int LoadBlockImage(sf::RenderWindow &m_WinMario, const short frameX, const short i, const short j);
 };

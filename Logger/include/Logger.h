@@ -3,11 +3,17 @@
 #include <stdarg.h>
 #include "FileBitMask.h"
 
+/*
+ Log Functions
+ */
 #define LogDebug(bitMask, ...) Logger::GetLoggerInstance()->LOG(LOG_DEBUG, bitMask, __VA_ARGS__)
 #define LogInfo(bitMask, ...) Logger::GetLoggerInstance()->LOG(LOG_INFO, bitMask, __VA_ARGS__)
 #define LogWarning(bitMask, ...) Logger::GetLoggerInstance()->LOG(LOG_WARNING, bitMask, __VA_ARGS__)
 #define LogError(bitMask, ...) Logger::GetLoggerInstance()->LOG(LOG_ERROR, bitMask, __VA_ARGS__)
 
+/*
+ Log Level : defines the level of logger above which we all logs eill be printed
+ */
 enum LogLevel_e : unsigned char
 {
     LOG_DEBUG = 0,
@@ -16,6 +22,9 @@ enum LogLevel_e : unsigned char
     LOG_ERROR
 };
 
+/*
+ Logger Class
+ */
 class Logger
 {
 private:
@@ -35,9 +44,9 @@ public:
 
 public:
     void SetLogLevel(LogLevel_e level);
-    void SetLogBitMask(const unsigned int mask);
+    void SetLogBitMask(const int mask);
 
-    void LOG(LogLevel_e level, const unsigned int mask, const char *fmt, ...);
+    void LOG(LogLevel_e level, const int mask, const char *fmt, ...);
 };
 
 char *GetLogLevelString(LogLevel_e level);

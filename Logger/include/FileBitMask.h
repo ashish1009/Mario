@@ -1,19 +1,22 @@
 #pragma once
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Bit Mask for Logging
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 enum FileBitMask_e
 {
-    /* first Nibble (LSB) */
+    /// first Nibble (LSB)
     BIT_MAIN = 0,
     BIT_MARIO = 1,
     BIT_ENTITY = 2,
     BIT_PLAYER = 3,
 
-    /* second Nibble */
+    /// second Nibble
     BIT_TILEMAP = 4,
     BIT_BLOCK = 5,
     BIT_OBSTACLE = 6,
     BIT_LIST = 7,
 
-    /* third Nibble */
+    /// third Nibble 
 //    BIT_ = 
 };

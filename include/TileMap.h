@@ -1,32 +1,27 @@
 #pragma once
-
 #include "Entity.h"
 
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
 #include <SFML/Window.hpp>
 
-class TileMap : public sf::Drawable, public sf::Transformable
-{
+class TileMap : public sf::Drawable, public sf::Transformable {
 public:
-    struct PrintControl_s
-    {
-        std::string TileSet;
-        sf::Vector2<float> TileSize;
-        sf::Vector2<float> PrintSize;
-        Entity::Position_s Position;
+    struct PrintControl_s {
+        std::string tileSet;            // Image Path of Entity
+        sf::Vector2f tileSize;          //
+        Entity::Position_s position;    // Position of Entity where Entity need to be printed
         
-        unsigned short Tile;
-        unsigned int ImgY;
-        bool bInverted;
-        bool bObstacle;
+        short tile;                     // Index of image in X direction that need to be printed
+        short imgY;                     // Index of Image in Y direction that need to be printed
+        bool bInverted;                 // flag to check if Image need to be inverted
         
         PrintControl_s()
-        : Tile(0), ImgY(0), bInverted(0), TileSize(0, 0), PrintSize(0, 0), bObstacle(true) {}
+        : tile(0), imgY(0), bInverted(false){}
     };
-    
+
 public:
-    bool Load(const PrintControl_s PrintControl);
+    bool Load(const PrintControl_s &printControl);
 
     TileMap();
     ~TileMap();
