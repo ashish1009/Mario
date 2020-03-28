@@ -7,7 +7,7 @@ MARIO_INC = include
 LOGGER_SRC = Logger/src
 LOGGER_INC = Logger/include
 
-BIN = bin
+BIM = bin
 
 SFML_GRAPHICS = -lsfml-graphics
 SFML_SYSTEM = -lsfml-system
@@ -17,7 +17,7 @@ SFML_LIB = $(SFML_GRAPHICS)
 SFML_LIB += $(SFML_SYSTEM)
 SFML_LIB += $(SFML_WINDOW)
 
-SRC += $(MARIO_SRC)/main.cpp
+SRC += main.cpp
 SRC += $(MARIO_SRC)/Entity.cpp
 SRC += $(MARIO_SRC)/Player.cpp
 SRC += $(MARIO_SRC)/Mario.cpp
@@ -34,8 +34,11 @@ INC += -I$(LOGGER_INC)
 OBJ = $(BIN)/mario.out
 
 default:
+	clear
 	$(GCC) -g -std=$(CPP) $(SRC) $(SFML_LIB) $(INC) $(SFML_LIB) -o$(OBJ)
+	clear
+	./Mario.out
 
 clean:
-	#rm -rf mario.out
-	#rm -rf mario.out.dSYM
+	rm -rf mario.out
+	rm -rf mario.out.dSYM
