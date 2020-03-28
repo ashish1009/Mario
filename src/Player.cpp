@@ -81,37 +81,40 @@ int Player::LoadPlayerImage(sf::RenderWindow &winMario) {
 /// Brief      : Check state of Player
 ///          if AIR then Free fall if jumping then jump
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Player::CheckPlayerState() {
-    if (JUMPING == m_State) {
-        if (MAX_JUMP_HEIGHT < m_JumpFactor) {
-            SetState(AIR);
-        }
-        else {
-            for (int i = 0; i < m_Speed; i++) {
-                if (!IsCollision()) {
-                    m_JumpFactor++;
-                    SetPosition(m_Position.X, m_Position.Y - 1);
-                }
-                else {
-                    SetState(AIR);
-                    break;
-                }
-            }
-        }
-    }
-    else if (AIR == m_State) {
-        for (int i = 0; i < m_Speed; i++) {
-            if (!IsCollision()) {
+void Player::CheckPlayerState(const int frameX) {
+//    if (JUMPING == m_State) {
+//        if (MAX_JUMP_HEIGHT < m_JumpFactor) {
+//            SetState(AIR);
+//        }
+//        else {
+//            for (int i = 0; i < m_Speed; i++) {
+//                if (!IsCollision()) {
+//                    m_JumpFactor++;
+//                    SetPosition(m_Position.X, m_Position.Y - 1);
+//                }
+//                else {
+//                    SetState(AIR);
+//                    break;
+//                }
+//            }
+//        }
+//    }
+//    else
+    if (AIR == m_State) {
+        const int freeFallSpeed = 1;
+        for (int i = 0; i < freeFallSpeed; i++) {
+            if (!IsCollision(frameX)) {
                 SetPosition(m_Position.X, m_Position.Y + 1);
             }
             else {
-                LandPlayer();
+                /// Land Player
+                SetState(GROUND);
                 break;
             }
         }
     }
     else {
-//        SetState(AIR);
+        SetState(AIR);
     }
 }
 
@@ -119,44 +122,52 @@ void Player::CheckPlayerState() {
 /// Brief      :  Lands the player if collision
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Player::LandPlayer() {
-    SetState(GROUND);
-    m_JumpFactor = 0;
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Brief      : Checks the collison of Player according to its state and moving direction
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool Player::IsCollision() {
+bool Player::IsCollision(const int frameX) {
     Obstacle *pObstacle = Obstacle::GetInstance();
     short collisionPixel = 0;
     
     const int numPixelForCollision = 6;
-    const int playerHeight = (Entity::BIG == m_Size) ? PLAYER_HEIGHT_BIG : PLAYER_HEIGHT_SMALL;
     
     switch (m_State) {
         case AIR:
-            for (int i = 0; i < PLAYER_WIDTH; i++) {
-                if (pObstacle->GetIsObstacleAt(m_Position.Y, i + m_Position.X)) {
-                    collisionPixel++;
-                    
-                    if (numPixelForCollision == collisionPixel) {
-                        return true;
-                    }
-                }
+        {
+            const int pixelToBeLandedL = 3;
+            const int pixelToBeLandedR = 13;
+            if ((pObstacle->GetIsObstacleAt(m_Position.Y, pixelToBeLandedL + m_Position.X + frameX)) ||
+                (pObstacle->GetIsObstacleAt(m_Position.Y, pixelToBeLandedR + m_Position.X + frameX))) {
+
+                return true;
             }
-            break;
+        }
+        break;
             
         case GROUND:
-            for (int i = 0; i < playerHeight; i++) {
-                const int xPixelOfPlayer = ((RIGHT == m_Direction) ? (m_Position.X + PLAYER_WIDTH + 1) : (m_Position.X - 1));
-                
-                if (pObstacle->GetIsObstacleAt(m_Position.Y - i, xPixelOfPlayer)) {
-                    collisionPixel++;
-                    
-                    if (numPixelForCollision == collisionPixel) {
-                        return true;
-                    }
-                }
+            {
+//                int playerHeight, pixelToColloidU,pixelToColloidD;
+//                if (BIG == m_Size) {
+//                    playerHeight =  PLAYER_HEIGHT_BIG;
+//                    pixelToColloidD = 4;
+//                    pixelToColloidU = playerHeight - pixelToColloidU;
+//                }
+//                else {
+//                    playerHeight = PLAYER_HEIGHT_SMALL;
+//                    pixelToColloidD = 2;
+//                    pixelToColloidU = playerHeight - pixelToColloidU;
+//                }
+//                
+//                const int xPixelOfPlayer = ((RIGHT == m_Direction) ? (m_Position.X + PLAYER_WIDTH + 1) : (m_Position.X - 1));
+//                
+//                if ((pObstacle->GetIsObstacleAt(m_Position.Y - pixelToColloidU, xPixelOfPlayer + frameX)) ||
+//                    (pObstacle->GetIsObstacleAt(m_Position.Y - pixelToColloidU, xPixelOfPlayer + frameX))) {
+//
+//                    return true;
+//                }
             }
             break;
             
@@ -176,45 +187,42 @@ void Player::Move(Entity::Direction_e direction, int &frameX) {
         SetPlayerImageIdx(PlayerImgIdx::RUN[m_PlayerMoveIdx++]);
         m_PlayerMoveIdx %= PlayerImgIdx::RUN_IDX_ARR_SIZE;
     }
+    
+    if (m_Speed < 4) {
+        m_Speed += 1;
+    }
 
     for (int i = 0; i < m_Speed; i++) {
-        if (!IsCollision()) {
-            if (RIGHT == direction) {
+//        if (!IsCollision(frameX)) {
+        {  if (RIGHT == direction) {
                 if (LEFT == m_Direction){
                     SetDirection(RIGHT);
                 }
                 else {
-                    if (PLAYER_POS_X_STOP > m_Position.X) {
-                        SetPosition(m_Position.X + 1, m_Position.Y);
-                    }
-                    if (FRAME_MOVE_START_PLAYER_X < m_Position.X) {
-                        if (MAX_FRAME_MOVE > frameX) {
-                            frameX += 1;
-                            /// Remove First column pixels after moving that frame right
-                            Obstacle::GetInstance()-> PopFirstColumnPixels(); ///As Obstacle is Singleton class no need to make any object
-                            
-                            /// As One column is removed we need to add another at end;
-                            Obstacle::GetInstance()->PushLastColumnPixels();
-                        }
+//                    if (PLAYER_POS_X_STOP > m_Position.X) {
+//                        SetPosition(m_Position.X + 1, m_Position.Y);
+//                    }
+                    if (/*(FRAME_MOVE_START_PLAYER_X < m_Position.X) && */(MAX_FRAME_MOVE > frameX)) {
+                        frameX += 1;
                     }
                 }
             }
-            else if (LEFT == direction) {
-                if (RIGHT == m_Direction) {
-                    SetDirection(LEFT);
-                }
-                else {
-                    if (0 <= m_Position.X) {
-                        SetPosition(m_Position.X - 1, m_Position.Y);
-                    }
-                }
-            }
+//            else if (LEFT == direction) {
+//                if (RIGHT == m_Direction) {
+//                    SetDirection(LEFT);
+//                }
+//                else {
+//                    if (0 <= m_Position.X) {
+//                        SetPosition(m_Position.X - 1, m_Position.Y);
+//                    }
+//                }
+//            }
             else {
                 LogError(BIT_PLAYER, "Player::Move() : Player Directio is Invalid %d \n", m_Direction);
             }
         }
-        else {
-            break;
-        }
+//        else {
+//            break;
+//        }
     }
 }

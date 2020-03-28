@@ -7,7 +7,7 @@ MARIO_INC = include
 LOGGER_SRC = Logger/src
 LOGGER_INC = Logger/include
 
-BIM = bin
+BIN = bin
 
 SFML_GRAPHICS = -lsfml-graphics
 SFML_SYSTEM = -lsfml-system
@@ -31,7 +31,7 @@ SRC += $(LOGGER_SRC)/Logger.cpp
 INC += -I$(MARIO_INC)
 INC += -I$(LOGGER_INC)
 
-OBJ = $(BIN)/mario.out
+OBJ = mario.out
 
 default:
 	clear

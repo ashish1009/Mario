@@ -47,8 +47,8 @@ public:
     static void ReleaseInstance();
     
     int LoadPlayerImage(sf::RenderWindow &winMario);
-    void CheckPlayerState();
-    bool IsCollision();
+    void CheckPlayerState(const int frameX);
+    bool IsCollision(const int frameX);
     void LandPlayer();
     void Move(Direction_e direction, int &frameX);
     
@@ -61,8 +61,7 @@ public:
     }
     
     inline void SetPlayerStandInAir() {
-        SetPlayerImageIdx(PlayerImgIdx::STAND);
-        RestePlayerMoveIdx();
+        
     }
     
     friend class Mario;

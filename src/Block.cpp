@@ -14,9 +14,9 @@ Block::~Block() {
 /// Brief      : Load Block Image and sst all pixel as obstacle
 ///         m_WinMario get Updated
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-int Block::LoadBlockImage(sf::RenderWindow &m_WinMario, const short frameX, const short row, const short col) {
-    float blockX = (col * BLOCK_SIZE) - frameX;
-    float blockY = (row * BLOCK_SIZE) + (BLOCK_SIZE >> 1);  /// Shift for lasg half ground block
+int Block::LoadBlockImage(sf::RenderWindow &m_WinMario, const short frameX, const short row, const short col, Obstacle::Behaviour_e blockType) {
+    const int blockX = (col << BLOCK_SIZE_BIT) - frameX;                /// col  * 16 - Frame    : As Frame moves left then we need to check block with that offset rather than 0
+    const int blockY = (row << BLOCK_SIZE_BIT) + (BLOCK_SIZE >> 1);     /// row * 16 + 8           : Shift 8  for last half ground block
     
     TileMap::PrintControl_s printControl;
     Entity::Position_s blockPosition(blockX, blockY);
@@ -24,13 +24,12 @@ int Block::LoadBlockImage(sf::RenderWindow &m_WinMario, const short frameX, cons
     m_BlockIdxX = 0;
     
     Obstacle *pObstacle = Obstacle::GetInstance();
-    float tileSize = (BLOCK_SIZE == pObstacle->GetBlockSizeAt(row, col) ? BLOCK_SIZE : BLOCK_SIZE * 2); //  TODO;
-
+    
     printControl.tileSet = ResourcePath + BLOCK_IMG_PATH;
     printControl.position = blockPosition;
-    printControl.imgY = pObstacle->GetBlockTypeAt(row, col) * BLOCK_SIZE;
+    printControl.imgY = blockType << BLOCK_SIZE_BIT;
     printControl.tile = m_BlockIdxX;
-    printControl.tileSize = sf::Vector2f(tileSize, BLOCK_SIZE);
+    printControl.tileSize = sf::Vector2f(BLOCK_SIZE, BLOCK_SIZE);
     printControl.bInverted = false;
     
     if (!m_Tile.Load(printControl)) {

@@ -4,8 +4,8 @@
 #define QUAD_VERTEX 4
 
 bool TileMap::Load(const PrintControl_s &printControl) {
-    float X = printControl.position.X;
-    float Y = printControl.position.Y;
+    const int X = printControl.position.X;
+    const int Y = printControl.position.Y;
         
     if (!m_TileSet.loadFromFile(printControl.tileSet)) {
         LogError(BIT_TILEMAP, "TileMap::LoadPlayer(), Can Not Load Image \n");

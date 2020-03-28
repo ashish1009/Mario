@@ -12,12 +12,12 @@ public:
     /// Structure to define position of Entity
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     struct Position_s {
-        float X, Y;
+        int X, Y;
         
         Position_s()
         : X(0.0f), Y(0.0f) {}
         
-        Position_s(const float x, const float y)
+        Position_s(const int x, const int y)
         : X(x), Y(y) {}
 
     };
@@ -59,7 +59,7 @@ public:
     };
     
     typedef short Speed;
-    static const short DEFAULT_SPEED = 2;
+    static const short DEFAULT_SPEED = 1;
     
 protected:
     Position_s m_Position;
@@ -103,7 +103,7 @@ public:
     ///////////////////////////////////////////////////////////////
     ///     Set Entity
     ///////////////////////////////////////////////////////////////
-    inline void SetPosition(const float X, const float Y) {
+    inline void SetPosition(const int X, const int Y) {
         m_Position.X = X;
         m_Position.Y = Y;
     }

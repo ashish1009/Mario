@@ -62,20 +62,10 @@ void Mario::PlayGame() {
 //                    if (m_MarioEvent.key.code == sf::Keyboard::LShift) {
 //                        m_pPlayer->SetState(Entity::JUMPING);
 //                    }
-                    if (m_pPlayer->GetSpeed() < 4) {
-                        m_pPlayer->SetSpeed(m_pPlayer->GetSpeed() + 1);
-                    }
-                    
                     if (m_MarioEvent.key.code == sf::Keyboard::Right) {
-                        for (int i = 0; i < m_pPlayer->GetSpeed(); i++) {
-                            if (m_FramePosition < 3130) {
-                                m_FramePosition ++;
-                                Obstacle::GetInstance()-> PopFirstColumnPixels();
-                                Obstacle::GetInstance()->PushLastColumnPixels();
-                            }
-                        }
-//                        m_pPlayer->Move(Entity::RIGHT, m_FramePosition);
+                        m_pPlayer->Move(Entity::RIGHT, m_FramePosition);
                     }
+
                     else if (m_MarioEvent.key.code == sf::Keyboard::Left) {
 //                        m_pPlayer->Move(Entity::LEFT, m_FramePosition);
                     }
@@ -83,15 +73,17 @@ void Mario::PlayGame() {
                     
                 case sf::Event::KeyReleased:
                     if ((m_MarioEvent.key.code == sf::Keyboard::Right) || (m_MarioEvent.key.code == sf::Keyboard::Left)) {
-                        m_pPlayer->SetPlayerStandInAir();
-                        m_pPlayer->SetSpeed(1);
+                        m_pPlayer->SetPlayerImageIdx(PlayerImgIdx::STAND);
+                        m_pPlayer->RestePlayerMoveIdx();
+                        m_pPlayer->SetSpeed(Entity::DEFAULT_SPEED);
                     }
+                    break;
                                         
                 case sf::Event::MouseMoved:
                     m_Score = (m_MarioEvent.mouseMove.x * WORLD_VIEW_WIDTH) / m_WinSize.x;
                     m_CoinCount = (m_MarioEvent.mouseMove.y * WORLD_VIEW_HEIGHT) / m_WinSize.y;
                     
-                    m_Level = m_pObstacle->GetIsObstacleAt(m_CoinCount, m_Score);
+                    m_Level = m_pObstacle->GetIsObstacleAt(m_CoinCount, m_Score + m_FramePosition);
                     m_Time = m_pPlayer->GetState();
                     break;
                     
@@ -140,14 +132,16 @@ void Mario::MoveBg() {
 ///         m_WinMario get Updated
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Mario::DrawBlock() {
-    const int cNumColView = WORLD_VIEW_WIDTH / BLOCK_SIZE;  /// 16
-    const int xOffset = m_FramePosition / BLOCK_SIZE;
+    const int cNumColView = WORLD_VIEW_WIDTH >> BLOCK_SIZE_BIT;     /// to divide by Block SIze = 16
+    const int xOffset = m_FramePosition >> BLOCK_SIZE_BIT;          /// to divide by Block SIze = 16
     
     for (int i = 0; i < NUM_ROW; i++) {
         for (int j = 0; j <= cNumColView; j++) {
-            if (Obstacle::NO_BEHAV != m_pObstacle->GetBlockTypeAt(i, j + xOffset)) {
+            Obstacle::Behaviour_e blockType = m_pObstacle->GetBlockTypeAt(i, j + xOffset);  /// To avoid funcion calls twice
+            if (Obstacle::BRICK == blockType || Obstacle::BONUS == blockType) {
+                /// Only Brick and Bonus Need to draw at run time As only these two will change at run time
                 Block block;
-                if (EXIT_FAILURE == block.LoadBlockImage(m_WinMario, m_FramePosition, i, j + xOffset)) {
+                if (EXIT_FAILURE == block.LoadBlockImage(m_WinMario, m_FramePosition, i, j + xOffset, blockType)) {
                     m_WinMario.close();
                 }
             }
@@ -160,7 +154,7 @@ void Mario::DrawBlock() {
 ///         m_WinMario get Updated
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Mario::DrawPlayer() {
-//    m_pPlayer->CheckPlayerState();
+    m_pPlayer->CheckPlayerState(m_FramePosition);
     if (EXIT_FAILURE == m_pPlayer->LoadPlayerImage(m_WinMario)) {
         LogError(BIT_MARIO, " Mario::DrawPlayer() : Can Not Load Player Image \n");
         m_WinMario.close();
