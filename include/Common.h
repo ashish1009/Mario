@@ -2,7 +2,7 @@
 #include "Obstacle.h"
 
 /// Path for Images used in Game
-const std::string ResourcePath = "/Users/ashish./Documents/XCode/Mario/Mario/Resources/";
+const std::string ResourcePath = "../Resources/";
 
 /// Window Size Factro From World View
 const short WINDOW_WORLD_FACTOR = 4;
