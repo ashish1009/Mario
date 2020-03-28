@@ -63,11 +63,11 @@ void Mario::PlayGame() {
 //                        m_pPlayer->SetState(Entity::JUMPING);
 //                    }
                     if (m_MarioEvent.key.code == sf::Keyboard::Right) {
-                        m_pPlayer->Move(Entity::RIGHT, m_FramePosition);
+                        m_pPlayer->MoveRight(m_FramePosition, m_WinMario);
                     }
 
                     else if (m_MarioEvent.key.code == sf::Keyboard::Left) {
-//                        m_pPlayer->Move(Entity::LEFT, m_FramePosition);
+//                        m_pPlayer->MoveLeft(m_FramePosition, m_WinMario);
                     }
                     break;
                     
@@ -139,6 +139,7 @@ void Mario::DrawBlock() {
         for (int j = 0; j <= cNumColView; j++) {
             Obstacle::Behaviour_e blockType = m_pObstacle->GetBlockTypeAt(i, j + xOffset);  /// To avoid funcion calls twice
             if (Obstacle::BRICK == blockType || Obstacle::BONUS == blockType) {
+                
                 /// Only Brick and Bonus Need to draw at run time As only these two will change at run time
                 Block block;
                 if (EXIT_FAILURE == block.LoadBlockImage(m_WinMario, m_FramePosition, i, j + xOffset, blockType)) {

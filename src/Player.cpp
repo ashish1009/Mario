@@ -149,25 +149,17 @@ bool Player::IsCollision(const int frameX) {
             
         case GROUND:
             {
-//                int playerHeight, pixelToColloidU,pixelToColloidD;
-//                if (BIG == m_Size) {
-//                    playerHeight =  PLAYER_HEIGHT_BIG;
-//                    pixelToColloidD = 4;
-//                    pixelToColloidU = playerHeight - pixelToColloidU;
-//                }
-//                else {
-//                    playerHeight = PLAYER_HEIGHT_SMALL;
-//                    pixelToColloidD = 2;
-//                    pixelToColloidU = playerHeight - pixelToColloidU;
-//                }
-//                
-//                const int xPixelOfPlayer = ((RIGHT == m_Direction) ? (m_Position.X + PLAYER_WIDTH + 1) : (m_Position.X - 1));
-//                
-//                if ((pObstacle->GetIsObstacleAt(m_Position.Y - pixelToColloidU, xPixelOfPlayer + frameX)) ||
-//                    (pObstacle->GetIsObstacleAt(m_Position.Y - pixelToColloidU, xPixelOfPlayer + frameX))) {
-//
-//                    return true;
-//                }
+                
+                const int playerHeight = (BIG == m_Size) ? PLAYER_HEIGHT_BIG : PLAYER_HEIGHT_SMALL;
+                const int pixelToColloidD = 3;
+                const int pixelToColloidU = playerHeight - pixelToColloidD;
+                const int xPixelOfPlayer = ((RIGHT == m_Direction) ? (m_Position.X + PLAYER_WIDTH + 1) : (m_Position.X - 1));
+                
+                if ((pObstacle->GetIsObstacleAt(m_Position.Y - pixelToColloidU, xPixelOfPlayer + frameX)) ||
+                    (pObstacle->GetIsObstacleAt(m_Position.Y - pixelToColloidD, xPixelOfPlayer + frameX))) {
+
+                    return true;
+                }
             }
             break;
             
@@ -180,9 +172,53 @@ bool Player::IsCollision(const int frameX) {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Brief      : Move the Player also changes the m_FramePositionX of Mario clsss
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Player::Move(Entity::Direction_e direction, int &frameX) {
-    SetDirection(direction);
+void Player::MoveRight(int &frameX, sf::RenderWindow &winMario) {
+//    Obstacle *pObstacle = Obstacle::GetInstance();
+    SetDirection(RIGHT);
+    
+    if (m_Speed < 4) {
+        m_Speed += 1;
+    }
 
+//    const int playerHeight = (BIG == m_Size) ? PLAYER_HEIGHT_BIG : PLAYER_HEIGHT_SMALL;
+//    const int pixelToColloidD = 3;
+//    const int pixelToColloidU = playerHeight - pixelToColloidD;
+//    const int xPixelOfPlayer = ((RIGHT == m_Direction) ? (m_Position.X + PLAYER_WIDTH + 1) : (m_Position.X - 1));
+
+    for (int i = 0; i < m_Speed; i++) {
+        if (GROUND == m_State) {
+            SetPlayerImageIdx(PlayerImgIdx::RUN[m_PlayerMoveIdx++]);
+            m_PlayerMoveIdx %= PlayerImgIdx::RUN_IDX_ARR_SIZE;
+        }
+
+//        if (!((pObstacle->GetIsObstacleAt(m_Position.Y - pixelToColloidU, xPixelOfPlayer + frameX)) ||
+//            (pObstacle->GetIsObstacleAt(m_Position.Y - pixelToColloidD, xPixelOfPlayer + frameX)))) {
+        if (!IsCollision(frameX)) {
+            if (LEFT != m_Direction) {
+//                    if (PLAYER_POS_X_STOP > m_Position.X) {
+//                        SetPosition(m_Position.X + 1, m_Position.Y);
+//                    }
+                if (/*(FRAME_MOVE_START_PLAYER_X < m_Position.X) && */(MAX_FRAME_MOVE > frameX)) {
+                    frameX += 1;
+                }
+            }
+            else {
+                SetDirection(RIGHT);
+            }
+            if (EXIT_FAILURE == LoadPlayerImage(winMario)) {
+                LogError(BIT_MARIO, " Player::MoveRigh() : Can Not Load Player Image \n");
+                winMario.close();
+            }
+        }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Brief      : Move the Player also changes the m_FramePositionX of Mario clsss
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Player::MoveLeft(int &frameX, sf::RenderWindow &winMario) {
+    SetDirection(LEFT);
+    
     if (GROUND == m_State) {
         SetPlayerImageIdx(PlayerImgIdx::RUN[m_PlayerMoveIdx++]);
         m_PlayerMoveIdx %= PlayerImgIdx::RUN_IDX_ARR_SIZE;
@@ -191,22 +227,7 @@ void Player::Move(Entity::Direction_e direction, int &frameX) {
     if (m_Speed < 4) {
         m_Speed += 1;
     }
-
-    for (int i = 0; i < m_Speed; i++) {
-//        if (!IsCollision(frameX)) {
-        {  if (RIGHT == direction) {
-                if (LEFT == m_Direction){
-                    SetDirection(RIGHT);
-                }
-                else {
-//                    if (PLAYER_POS_X_STOP > m_Position.X) {
-//                        SetPosition(m_Position.X + 1, m_Position.Y);
-//                    }
-                    if (/*(FRAME_MOVE_START_PLAYER_X < m_Position.X) && */(MAX_FRAME_MOVE > frameX)) {
-                        frameX += 1;
-                    }
-                }
-            }
+    
 //            else if (LEFT == direction) {
 //                if (RIGHT == m_Direction) {
 //                    SetDirection(LEFT);
@@ -217,12 +238,5 @@ void Player::Move(Entity::Direction_e direction, int &frameX) {
 //                    }
 //                }
 //            }
-            else {
-                LogError(BIT_PLAYER, "Player::Move() : Player Directio is Invalid %d \n", m_Direction);
-            }
-        }
-//        else {
-//            break;
-//        }
-    }
+
 }

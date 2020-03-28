@@ -50,7 +50,8 @@ public:
     void CheckPlayerState(const int frameX);
     bool IsCollision(const int frameX);
     void LandPlayer();
-    void Move(Direction_e direction, int &frameX);
+    void MoveRight(int &frameX, sf::RenderWindow &winMario);
+    void MoveLeft(int &frameX, sf::RenderWindow &winMario);
     
     inline void SetPlayerImageIdx(const short playerImgIdx) {
         m_PlayerImgIdx = playerImgIdx;
