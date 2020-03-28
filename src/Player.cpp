@@ -7,6 +7,8 @@ const short PLAYER_POS_X_STOP = 112;            /// Player Position after witch 
 const short MAX_FRAME_MOVE = 3130;              /// Frame can max move to
 const short MAX_JUMP_HEIGHT = 64;
 
+const short gPixelToColloidD = 3;               /// First pixel from Down to be collided : can be changed
+
 Player *Player::m_pInstance = nullptr;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -19,6 +21,7 @@ Player::Player()
 //    SetSize(BIG);
 //    m_TileVector = {PLAYER_WIDTH, PLAYER_HEIGHT_BIG};
 
+    m_pObstacle = Obstacle::GetInstance();
     LogInfo(BIT_PLAYER, "Player::Player(), Player Constructor called !! \n");
 }
 
@@ -26,6 +29,7 @@ Player::Player()
 /// Brief      : Destructor of Player Class
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Player::~Player() {
+    m_pObstacle->ReleaseInstance();
     LogInfo(BIT_PLAYER, "Player::~Player(), Player Destructor called !! \n");
 }
 
@@ -47,6 +51,7 @@ void Player::ReleaseInstance() {
     if (nullptr != m_pInstance) {
         LogInfo(BIT_PLAYER, "Player::ReleaseInstance(), Deleting Player Instance() \n");
         delete m_pInstance;
+        m_pInstance = nullptr;
     }
 }
 
@@ -65,7 +70,7 @@ int Player::LoadPlayerImage(sf::RenderWindow &winMario) {
     printControl.tile = m_PlayerImgIdx;
     printControl.tileSize = m_TileVector;
     printControl.bInverted = (LEFT == m_Direction) ? true : false;
-
+    
     if (!m_Map.Load(printControl)) {
         LogError (BIT_PLAYER, "Player::LoadPlayerImage() : Can not Load Image using TileMap \n");
         return EXIT_FAILURE;
@@ -78,165 +83,116 @@ int Player::LoadPlayerImage(sf::RenderWindow &winMario) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/// Brief      : Check state of Player
-///          if AIR then Free fall if jumping then jump
+/// Brief      : Check state of Playe(     if AIR then Free fall if jumping then jump
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Player::CheckPlayerState(const int frameX) {
-//    if (JUMPING == m_State) {
-//        if (MAX_JUMP_HEIGHT < m_JumpFactor) {
-//            SetState(AIR);
-//        }
-//        else {
-//            for (int i = 0; i < m_Speed; i++) {
-//                if (!IsCollision()) {
-//                    m_JumpFactor++;
-//                    SetPosition(m_Position.X, m_Position.Y - 1);
-//                }
-//                else {
-//                    SetState(AIR);
-//                    break;
-//                }
-//            }
-//        }
-//    }
-//    else
-    if (AIR == m_State) {
-        const int freeFallSpeed = 1;
-        for (int i = 0; i < freeFallSpeed; i++) {
-            if (!IsCollision(frameX)) {
-                SetPosition(m_Position.X, m_Position.Y + 1);
-            }
-            else {
-                /// Land Player
-                SetState(GROUND);
-                break;
-            }
+void Player::CheckPlayerState(const int frameX, sf::RenderWindow &winMario) {
+    Obstacle *pObstacle = Obstacle::GetInstance();
+    const int pixelToBeColloidedL = 3;
+    const int pixelToBeColloidedR = 13;
+    
+    if (JUMPING == m_State) {
+        Jump();
+    }
+    else if (AIR == m_State) {
+        if (IsDownCollision(frameX)) {
+            /// Land Player
+            SetState(GROUND);
+            ResetJumpFactor();
+        }
+        else {
+            SetPosition(m_Position.X, m_Position.Y + 1);
         }
     }
     else {
         SetState(AIR);
     }
+    
+    if (RUNNING != m_State) {
+        if (EXIT_FAILURE == LoadPlayerImage(winMario)) {
+            LogError(BIT_MARIO, " Player::CheckPlayerStatus() : Can Not Load Player Image \n");
+            winMario.close();
+        }
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/// Brief      :  Lands the player if collision
+/// Brief      :  Jump Player
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Player::LandPlayer() {
-
+void Player::Jump() {
+    SetPlayerImageIdx(PlayerImgIdx::JUMP);
+        
+    if (MAX_JUMP_HEIGHT < m_JumpFactor) {
+        SetState(AIR);
+    }
+    else {
+        if (1) {
+            m_JumpFactor++;
+            SetPosition(m_Position.X, m_Position.Y - 1);
+        }
+        else {
+            SetState(AIR);
+        }
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/// Brief      : Checks the collison of Player according to its state and moving direction
+/// Brief      : Move the Player also changes the m_FramePositionX of Mario clsss
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool Player::IsCollision(const int frameX) {
+void Player::Move(Entity::Direction_e direction, int &frameX, sf::RenderWindow &winMario) {
+    SetDirection(direction);
     Obstacle *pObstacle = Obstacle::GetInstance();
-    short collisionPixel = 0;
-    
-    const int numPixelForCollision = 6;
-    
-    switch (m_State) {
-        case AIR:
-        {
-            const int pixelToBeLandedL = 3;
-            const int pixelToBeLandedR = 13;
-            if ((pObstacle->GetIsObstacleAt(m_Position.Y, pixelToBeLandedL + m_Position.X + frameX)) ||
-                (pObstacle->GetIsObstacleAt(m_Position.Y, pixelToBeLandedR + m_Position.X + frameX))) {
 
-                return true;
-            }
-        }
-        break;
-            
-        case GROUND:
-            {
-                
-                const int playerHeight = (BIG == m_Size) ? PLAYER_HEIGHT_BIG : PLAYER_HEIGHT_SMALL;
-                const int pixelToColloidD = 3;
-                const int pixelToColloidU = playerHeight - pixelToColloidD;
-                const int xPixelOfPlayer = ((RIGHT == m_Direction) ? (m_Position.X + PLAYER_WIDTH + 1) : (m_Position.X - 1));
-                
-                if ((pObstacle->GetIsObstacleAt(m_Position.Y - pixelToColloidU, xPixelOfPlayer + frameX)) ||
-                    (pObstacle->GetIsObstacleAt(m_Position.Y - pixelToColloidD, xPixelOfPlayer + frameX))) {
-
-                    return true;
-                }
-            }
-            break;
-            
-        default:
-            break;
-    }
-    return false;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/// Brief      : Move the Player also changes the m_FramePositionX of Mario clsss
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Player::MoveRight(int &frameX, sf::RenderWindow &winMario) {
-//    Obstacle *pObstacle = Obstacle::GetInstance();
-    SetDirection(RIGHT);
-    
-    if (m_Speed < 4) {
-        m_Speed += 1;
-    }
-
-//    const int playerHeight = (BIG == m_Size) ? PLAYER_HEIGHT_BIG : PLAYER_HEIGHT_SMALL;
-//    const int pixelToColloidD = 3;
-//    const int pixelToColloidU = playerHeight - pixelToColloidD;
-//    const int xPixelOfPlayer = ((RIGHT == m_Direction) ? (m_Position.X + PLAYER_WIDTH + 1) : (m_Position.X - 1));
-
-    for (int i = 0; i < m_Speed; i++) {
-        if (GROUND == m_State) {
-            SetPlayerImageIdx(PlayerImgIdx::RUN[m_PlayerMoveIdx++]);
-            m_PlayerMoveIdx %= PlayerImgIdx::RUN_IDX_ARR_SIZE;
-        }
-
-//        if (!((pObstacle->GetIsObstacleAt(m_Position.Y - pixelToColloidU, xPixelOfPlayer + frameX)) ||
-//            (pObstacle->GetIsObstacleAt(m_Position.Y - pixelToColloidD, xPixelOfPlayer + frameX)))) {
-        if (!IsCollision(frameX)) {
-            if (LEFT != m_Direction) {
-//                    if (PLAYER_POS_X_STOP > m_Position.X) {
-//                        SetPosition(m_Position.X + 1, m_Position.Y);
-//                    }
-                if (/*(FRAME_MOVE_START_PLAYER_X < m_Position.X) && */(MAX_FRAME_MOVE > frameX)) {
-                    frameX += 1;
-                }
-            }
-            else {
-                SetDirection(RIGHT);
-            }
-            if (EXIT_FAILURE == LoadPlayerImage(winMario)) {
-                LogError(BIT_MARIO, " Player::MoveRigh() : Can Not Load Player Image \n");
-                winMario.close();
-            }
-        }
-    }
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/// Brief      : Move the Player also changes the m_FramePositionX of Mario clsss
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Player::MoveLeft(int &frameX, sf::RenderWindow &winMario) {
-    SetDirection(LEFT);
+    const int playerHeight = (BIG == m_Size) ? PLAYER_HEIGHT_BIG : PLAYER_HEIGHT_SMALL;
+    const int pixelToColloidU = playerHeight - gPixelToColloidD;                         /// First pixel from last to be collided : can be changed
+    const int xPixelOfPlayer = (RIGHT == m_Direction) ? (m_Position.X + PLAYER_WIDTH + 1) : (m_Position.X - 1);
     
     if (GROUND == m_State) {
-        SetPlayerImageIdx(PlayerImgIdx::RUN[m_PlayerMoveIdx++]);
-        m_PlayerMoveIdx %= PlayerImgIdx::RUN_IDX_ARR_SIZE;
+        SetState(RUNNING);
     }
     
-    if (m_Speed < 4) {
-        m_Speed += 1;
+    if (MAX_SPEED > m_Speed) {
+        m_Speed ++;
     }
     
-//            else if (LEFT == direction) {
-//                if (RIGHT == m_Direction) {
-//                    SetDirection(LEFT);
-//                }
-//                else {
-//                    if (0 <= m_Position.X) {
-//                        SetPosition(m_Position.X - 1, m_Position.Y);
-//                    }
-//                }
-//            }
-
+    for (int i = 0; i < m_Speed; i++) {
+        if (RUNNING == m_State) {
+            SetPlayerImageIdx(PlayerImgIdx::RUN[m_PlayerMoveIdx]);
+            m_PlayerMoveIdx++;
+            m_PlayerMoveIdx %= PlayerImgIdx::RUN_IDX_ARR_SIZE;
+        }
+        
+        else if (JUMPING == m_State) {
+            SetSpeed(Entity::DEFAULT_SPEED);
+            Jump();
+        }
+        
+        if (m_Direction == RIGHT) {
+            if (!((pObstacle->GetIsObstacleAt(m_Position.Y - pixelToColloidU, xPixelOfPlayer + frameX)) ||
+                (pObstacle->GetIsObstacleAt(m_Position.Y - gPixelToColloidD, xPixelOfPlayer + frameX)))) {
+                
+                if (PLAYER_POS_X_STOP > m_Position.X) {
+                    SetPosition(m_Position.X + 1, m_Position.Y);
+                }
+                else {
+                    if (MAX_FRAME_MOVE > frameX) {
+                        frameX++;
+                    }
+                }
+                
+                if (EXIT_FAILURE == LoadPlayerImage(winMario)) {
+                    LogError(BIT_MARIO, " Player::MoveRigh() : Can Not Load Player Image \n");
+                    winMario.close();
+                }
+            }
+        }
+        else {
+            if (!((pObstacle->GetIsObstacleAt(m_Position.Y - pixelToColloidU, xPixelOfPlayer + frameX)) ||
+                (pObstacle->GetIsObstacleAt(m_Position.Y - gPixelToColloidD, xPixelOfPlayer + frameX)))) {
+            
+                if (0 <= m_Position.X) {
+                    SetPosition(m_Position.X - 1, m_Position.Y);
+                }
+            }
+        }
+    }
 }

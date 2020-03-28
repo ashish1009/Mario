@@ -56,10 +56,12 @@ public:
         JUMPING = 1,    // When ENtity is Jumping
         GROUND = 2,     // When Entity is Landed at some place
         DYING = 3,      // When Entity is Dying
+        RUNNING = 4,    // When Entity is Running
     };
     
     typedef short Speed;
     static const short DEFAULT_SPEED = 1;
+    static const short MAX_SPEED = 4;
     
 protected:
     Position_s m_Position;

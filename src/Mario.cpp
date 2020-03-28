@@ -59,15 +59,16 @@ void Mario::PlayGame() {
                     break;
                 
                 case sf::Event::KeyPressed:
-//                    if (m_MarioEvent.key.code == sf::Keyboard::LShift) {
-//                        m_pPlayer->SetState(Entity::JUMPING);
-//                    }
-                    if (m_MarioEvent.key.code == sf::Keyboard::Right) {
-                        m_pPlayer->MoveRight(m_FramePosition, m_WinMario);
+                    if (m_MarioEvent.key.code == sf::Keyboard::LShift) {
+                        m_pPlayer->SetState(Entity::JUMPING);
                     }
-
-                    else if (m_MarioEvent.key.code == sf::Keyboard::Left) {
-//                        m_pPlayer->MoveLeft(m_FramePosition, m_WinMario);
+                    else {
+                        if (m_MarioEvent.key.code == sf::Keyboard::Right) {
+                            m_pPlayer->Move(Entity::RIGHT, m_FramePosition, m_WinMario);
+                        }
+                        else if (m_MarioEvent.key.code == sf::Keyboard::Left) {
+                            m_pPlayer->Move(Entity::LEFT, m_FramePosition, m_WinMario);
+                        }
                     }
                     break;
                     
@@ -91,7 +92,7 @@ void Mario::PlayGame() {
                     break;
             } /// switch (m_MarioEvent.type)
         } /// while (m_WinMario.pollEvent(m_MarioEvent))
-        MoveBg();
+        DrawView();
         DrawPlayer();
         PrintContent();
         
@@ -119,19 +120,20 @@ inline void Mario::SetTime() {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Brief      : Move the background world to position m_FramePosition,  Change the View of the world
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Mario::MoveBg() {
+void Mario::DrawView() {
     m_MarioView.move(m_FramePosition, 0);
     m_WinMario.setView(m_MarioView);
     m_WinMario.draw(m_MarioSprite);
     
-    DrawBlock();
+    m_pPlayer->CheckPlayerState(m_FramePosition, m_WinMario);
+    DrawBlocks();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Brief      : Draw Block Image according to its state
 ///         m_WinMario get Updated
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Mario::DrawBlock() {
+void Mario::DrawBlocks() {
     const int cNumColView = WORLD_VIEW_WIDTH >> BLOCK_SIZE_BIT;     /// to divide by Block SIze = 16
     const int xOffset = m_FramePosition >> BLOCK_SIZE_BIT;          /// to divide by Block SIze = 16
     
@@ -155,11 +157,11 @@ void Mario::DrawBlock() {
 ///         m_WinMario get Updated
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Mario::DrawPlayer() {
-    m_pPlayer->CheckPlayerState(m_FramePosition);
-    if (EXIT_FAILURE == m_pPlayer->LoadPlayerImage(m_WinMario)) {
-        LogError(BIT_MARIO, " Mario::DrawPlayer() : Can Not Load Player Image \n");
-        m_WinMario.close();
-    }
+//    m_pPlayer->CheckPlayerState(m_FramePosition, m_WinMario);
+//    if (EXIT_FAILURE == m_pPlayer->LoadPlayerImage(m_WinMario)) {
+//        LogError(BIT_MARIO, " Mario::DrawPlayer() : Can Not Load Player Image \n");
+//        m_WinMario.close();
+//    }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

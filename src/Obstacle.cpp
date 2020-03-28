@@ -47,6 +47,7 @@ void Obstacle::ReleaseInstance() {
     if (nullptr != m_pInstance) {
         LogInfo(BIT_OBSTACLE, "Obstacle::ReleaseInstance(), Deleting Obstacle Instance() \n");
         delete m_pInstance;
+        m_pInstance = nullptr;
     }
 }
 

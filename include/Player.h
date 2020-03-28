@@ -3,6 +3,9 @@
 #include <iostream>
 #include "TileMap.h"
 
+const short gPixelToBeColloidedL = 3;
+const short gPixelToBeColloidedR = 13;
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Player Image Index
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -34,6 +37,8 @@ private:
     sf::Vector2f m_TileVector;
     sf::View m_PlayerView;
     
+    Obstacle *m_pObstacle;
+    
     short m_PlayerImgIdx;
     short m_PlayerMoveIdx;
     short m_JumpFactor;
@@ -47,11 +52,9 @@ public:
     static void ReleaseInstance();
     
     int LoadPlayerImage(sf::RenderWindow &winMario);
-    void CheckPlayerState(const int frameX);
-    bool IsCollision(const int frameX);
-    void LandPlayer();
-    void MoveRight(int &frameX, sf::RenderWindow &winMario);
-    void MoveLeft(int &frameX, sf::RenderWindow &winMario);
+    void CheckPlayerState(const int frameX, sf::RenderWindow &winMario);
+    void Jump();
+    void Move(Entity::Direction_e direction, int &frameX, sf::RenderWindow &winMario);
     
     inline void SetPlayerImageIdx(const short playerImgIdx) {
         m_PlayerImgIdx = playerImgIdx;
@@ -61,8 +64,13 @@ public:
         m_PlayerMoveIdx = 0;
     }
     
-    inline void SetPlayerStandInAir() {
-        
+    inline void ResetJumpFactor() {
+        m_JumpFactor = 0;
+    }
+    
+    inline bool IsDownCollision (const int frameX) {
+        return ((m_pObstacle->GetIsObstacleAt(m_Position.Y, gPixelToBeColloidedL + m_Position.X + frameX)) ||
+                (m_pObstacle->GetIsObstacleAt(m_Position.Y, gPixelToBeColloidedR + m_Position.X + frameX)));
     }
     
     friend class Mario;
