@@ -87,21 +87,6 @@ const Obstacle::Abilities_e gRow9Ability[MAX_BLOCKS] = {
 const short gPipeRowIdx = 12;
 const short gBaseGroundRowIdx = gPipeRowIdx + 1;
 
-void Obstacle::SetObstaclePixels(const int row, const int col) {
-    float tileSize = (BLOCK_SIZE == GetBlockSizeAt(row, col) ? BLOCK_SIZE : BLOCK_SIZE * 2); //  TODO;
-    float blockX = (col * BLOCK_SIZE);
-    float blockY = (row * BLOCK_SIZE) + (BLOCK_SIZE >> 1);  /// Shift for lasg half ground block
-    
-    
-    for (int i = blockY - BLOCK_SIZE; i < blockY; i++) {
-        for (int j = blockX; j < blockX + tileSize; j++) {
-            if (0 <= i) {
-                SetObstacle(i, j, GetBlockTypeAt(row, col), GetBlockAbilityAt(row, col));
-            }
-        }
-    }
-}
-
 void Obstacle::GetBlock(const int row, const int col) {
     m_BlockType[row][col].size = BLOCK_SIZE;
     m_BlockType[row][col].behaviour = NO_BEHAV;
@@ -181,9 +166,23 @@ void Obstacle::InitObstacles() {
             GetBlock(i, j);
         }
     }
-//    m_BlockType[7][9].behaviour = Obstacle::BONUS;
-//    m_BlockType[7][31].behaviour = Obstacle::BONUS;
 }
 
-// 134, 135, 136, 137, 140, 141, 142, 143, 148, 149, 150, 151, 152, 155, 156, 157, 158, 182, 183, 184, 185, 186, 187, 188, 189, 190, 198
-// 1, 2, 3, 4, 4, 3, 2, 1, 1, 2, 3, 4, 4, 4, 3, 2, 1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 1
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Brief      : Set Each Pixels of BLOCK as obstacle
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Obstacle::SetObstaclePixels(const int row, const int col) {
+    float tileSize = (BLOCK_SIZE == GetBlockSizeAt(row, col) ? BLOCK_SIZE : BLOCK_SIZE * 2); //  TODO;
+    float blockX = (col * BLOCK_SIZE);
+    float blockY = (row * BLOCK_SIZE) + (BLOCK_SIZE >> 1);  /// Shift for lasg half ground block
+    
+    
+    for (int i = blockY - BLOCK_SIZE; i < blockY; i++) {
+        for (int j = blockX; j < blockX + tileSize; j++) {
+            if (0 <= i) {
+                SetObstacle(i, j, GetBlockTypeAt(row, col), GetBlockAbilityAt(row, col));
+            }
+        }
+    }
+}
+

@@ -111,7 +111,7 @@ void Player::CheckPlayerState() {
         }
     }
     else {
-        SetState(AIR);
+//        SetState(AIR);
     }
 }
 
