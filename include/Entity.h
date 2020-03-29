@@ -61,7 +61,7 @@ public:
     
     typedef short Speed;
     static const short DEFAULT_SPEED = 1;
-    static const short MAX_SPEED = 4;
+    static const short MAX_SPEED = 2;
     
 protected:
     Position_s m_Position;

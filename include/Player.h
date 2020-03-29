@@ -3,9 +3,6 @@
 #include <iostream>
 #include "TileMap.h"
 
-const short gPixelToBeColloidedL = 3;
-const short gPixelToBeColloidedR = 13;
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Player Image Index
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -28,6 +25,11 @@ public:
     static const short PLAYER_WIDTH = 16;
     static const short PLAYER_HEIGHT_SMALL = 16;
     static const short PLAYER_HEIGHT_BIG = 32;
+    
+    const short gPixelToBeColloidedL = 3;
+    const short gPixelToBeColloidedR = PLAYER_WIDTH - gPixelToBeColloidedL;
+    const short gPixelToColloidD = 3;               /// First pixel from Down to be collided : can be changed
+
     
 private:
     static inline const std::string PLAYER_IMG_PATH = "Graphics/Mario.png";
@@ -53,8 +55,10 @@ public:
     
     int LoadPlayerImage(sf::RenderWindow &winMario);
     void CheckPlayerState(const int frameX, sf::RenderWindow &winMario);
-    void Jump();
+    void Jump(const int frameX);
     void Move(Entity::Direction_e direction, int &frameX, sf::RenderWindow &winMario);
+    bool IsDownCollision (const int frameX);
+    bool IsJumpCollision (const int frameX, const int playerHeight);
     
     inline void SetPlayerImageIdx(const short playerImgIdx) {
         m_PlayerImgIdx = playerImgIdx;
@@ -68,9 +72,9 @@ public:
         m_JumpFactor = 0;
     }
     
-    inline bool IsDownCollision (const int frameX) {
-        return ((m_pObstacle->GetIsObstacleAt(m_Position.Y, gPixelToBeColloidedL + m_Position.X + frameX)) ||
-                (m_pObstacle->GetIsObstacleAt(m_Position.Y, gPixelToBeColloidedR + m_Position.X + frameX)));
+    inline bool IsSideCollision (const int frameX, const int pixelToColloidU, const int xPixelOfPlayer) const {
+        return ((m_pObstacle->GetIsObstacleAt(m_Position.Y - pixelToColloidU, xPixelOfPlayer + frameX)) ||
+                (m_pObstacle->GetIsObstacleAt(m_Position.Y - gPixelToColloidD, xPixelOfPlayer + frameX)));
     }
     
     friend class Mario;

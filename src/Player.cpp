@@ -5,9 +5,7 @@ const short PLAYER_START_X = 40;
 const short FRAME_MOVE_START_PLAYER_X = 80;     /// Player Position after which background will move left
 const short PLAYER_POS_X_STOP = 112;            /// Player Position after witch only Background will move
 const short MAX_FRAME_MOVE = 3130;              /// Frame can max move to
-const short MAX_JUMP_HEIGHT = 64;
-
-const short gPixelToColloidD = 3;               /// First pixel from Down to be collided : can be changed
+const short MAX_JUMP_HEIGHT = 80;
 
 Player *Player::m_pInstance = nullptr;
 
@@ -18,8 +16,8 @@ Player::Player()
 : m_TileVector(PLAYER_WIDTH, PLAYER_HEIGHT_SMALL), m_PlayerImgIdx(PlayerImgIdx::STAND),
     m_PlayerMoveIdx(0), m_JumpFactor(0) {
     SetPosition(PLAYER_START_X, 150);
-//    SetSize(BIG);
-//    m_TileVector = {PLAYER_WIDTH, PLAYER_HEIGHT_BIG};
+    SetSize(BIG);
+    m_TileVector = {PLAYER_WIDTH, PLAYER_HEIGHT_BIG};
 
     m_pObstacle = Obstacle::GetInstance();
     LogInfo(BIT_PLAYER, "Player::Player(), Player Constructor called !! \n");
@@ -91,9 +89,9 @@ void Player::CheckPlayerState(const int frameX, sf::RenderWindow &winMario) {
     const int pixelToBeColloidedR = 13;
     
     if (JUMPING == m_State) {
-        Jump();
+        Jump(frameX);
     }
-    else if (AIR == m_State) {
+    else {
         if (IsDownCollision(frameX)) {
             /// Land Player
             SetState(GROUND);
@@ -103,29 +101,24 @@ void Player::CheckPlayerState(const int frameX, sf::RenderWindow &winMario) {
             SetPosition(m_Position.X, m_Position.Y + 1);
         }
     }
-    else {
-        SetState(AIR);
-    }
-    
-    if (RUNNING != m_State) {
-        if (EXIT_FAILURE == LoadPlayerImage(winMario)) {
-            LogError(BIT_MARIO, " Player::CheckPlayerStatus() : Can Not Load Player Image \n");
-            winMario.close();
-        }
+    if (EXIT_FAILURE == LoadPlayerImage(winMario)) {
+        LogError(BIT_MARIO, " Player::CheckPlayerStatus() : Can Not Load Player Image \n");
+        winMario.close();
     }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Brief      :  Jump Player
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Player::Jump() {
+void Player::Jump(const int frameX) {
     SetPlayerImageIdx(PlayerImgIdx::JUMP);
-        
+    const int playerHeight = (BIG == m_Size) ? PLAYER_HEIGHT_BIG : PLAYER_HEIGHT_SMALL;
+    
     if (MAX_JUMP_HEIGHT < m_JumpFactor) {
         SetState(AIR);
     }
     else {
-        if (1) {
+        if (!IsJumpCollision(frameX, playerHeight)) {
             m_JumpFactor++;
             SetPosition(m_Position.X, m_Position.Y - 1);
         }
@@ -163,13 +156,11 @@ void Player::Move(Entity::Direction_e direction, int &frameX, sf::RenderWindow &
         
         else if (JUMPING == m_State) {
             SetSpeed(Entity::DEFAULT_SPEED);
-            Jump();
+            Jump(frameX);
         }
         
-        if (m_Direction == RIGHT) {
-            if (!((pObstacle->GetIsObstacleAt(m_Position.Y - pixelToColloidU, xPixelOfPlayer + frameX)) ||
-                (pObstacle->GetIsObstacleAt(m_Position.Y - gPixelToColloidD, xPixelOfPlayer + frameX)))) {
-                
+        if (!IsSideCollision(frameX, pixelToColloidU, xPixelOfPlayer)) {
+            if (m_Direction == RIGHT) {
                 if (PLAYER_POS_X_STOP > m_Position.X) {
                     SetPosition(m_Position.X + 1, m_Position.Y);
                 }
@@ -178,21 +169,69 @@ void Player::Move(Entity::Direction_e direction, int &frameX, sf::RenderWindow &
                         frameX++;
                     }
                 }
-                
-                if (EXIT_FAILURE == LoadPlayerImage(winMario)) {
-                    LogError(BIT_MARIO, " Player::MoveRigh() : Can Not Load Player Image \n");
-                    winMario.close();
-                }
-            }
-        }
-        else {
-            if (!((pObstacle->GetIsObstacleAt(m_Position.Y - pixelToColloidU, xPixelOfPlayer + frameX)) ||
-                (pObstacle->GetIsObstacleAt(m_Position.Y - gPixelToColloidD, xPixelOfPlayer + frameX)))) {
-            
+            } /// if (m_Direction == RIGHT)
+            else {
                 if (0 <= m_Position.X) {
                     SetPosition(m_Position.X - 1, m_Position.Y);
                 }
             }
-        }
+        } /// (!IsSideCollision(frameX, pixelToColloidU, xPixelOfPlayer))
+    } /// for (int i = 0; i < m_Speed; i++)
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Brief : Check the landing collison
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+bool Player::IsDownCollision (const int frameX) {
+    bool bLeftCollision = m_pObstacle->GetIsObstacleAt (m_Position.Y + 1, gPixelToBeColloidedL + m_Position.X + frameX);
+    bool bRightCollision = m_pObstacle->GetIsObstacleAt (m_Position.Y + 1, gPixelToBeColloidedR + m_Position.X + frameX);
+                            
+    if (bLeftCollision || bRightCollision) {
+        return true;
+    }
+    
+    /// Shift the plyer if few pixels are left for landing and those pixels are not enough for landing
+    else if ((m_pObstacle->GetIsObstacleAt (m_Position.Y + 1, gPixelToBeColloidedL - 2 + m_Position.X + frameX)) && (!bRightCollision)) {
+        SetPosition (m_Position.X + gPixelToBeColloidedL, m_Position.Y);
+        SetState(AIR);
+        return false;
+    }
+    
+    /// Shift the plyer if few pixels are left for landing and those pixels are not enough for landing
+    else if ((m_pObstacle->GetIsObstacleAt (m_Position.Y + 1, gPixelToBeColloidedR + 2 + m_Position.X + frameX)) && (!bLeftCollision)) {
+        SetPosition (m_Position.X - gPixelToBeColloidedL, m_Position.Y);
+        SetState(AIR);
+        return false;
+    }
+    else {
+        return  false;
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Brief : Check the Jumping collison
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+bool Player::IsJumpCollision (const int frameX, const int playerHeight) {
+    bool bLeftCollision = m_pObstacle->GetIsObstacleAt(m_Position.Y - playerHeight - 1, gPixelToBeColloidedL + m_Position.X + frameX);
+    bool bRightCollision = m_pObstacle->GetIsObstacleAt(m_Position.Y - playerHeight - 1, gPixelToBeColloidedL + m_Position.X + frameX);
+    
+    if (bLeftCollision || bRightCollision) {
+        return true;
+    }
+    
+    /// Shift the plyer if few pixels are left for landing and those pixels are not enough for landing
+    else if (m_pObstacle->GetIsObstacleAt(m_Position.Y - playerHeight - 1, gPixelToBeColloidedL + m_Position.X - 2 + frameX) && (!bRightCollision)) {
+        SetPosition (m_Position.X + gPixelToBeColloidedL, m_Position.Y);
+        return false;
+    }
+    
+    /// Shift the plyer if few pixels are left for landing and those pixels are not enough for landing
+    else if (m_pObstacle->GetIsObstacleAt(m_Position.Y - playerHeight - 1, gPixelToBeColloidedR + m_Position.X + frameX) && (!bLeftCollision)) {
+        SetPosition (m_Position.X - gPixelToBeColloidedL, m_Position.Y);
+        return false;
+    }
+    
+    else {
+        return false;
     }
 }
