@@ -83,14 +83,14 @@ void Mario::PlayGame() {
                     }
                     break;
                                         
-//                case sf::Event::MouseMoved:
-//                    m_Score = (m_MarioEvent.mouseMove.x * WORLD_VIEW_WIDTH) / m_WinSize.x;
-//                    m_CoinCount = (m_MarioEvent.mouseMove.y * WORLD_VIEW_HEIGHT) / m_WinSize.y;
-//
-//                    m_Level = m_pObstacle->GetIsObstacleAt(m_CoinCount, m_Score + m_FramePosition);
-//                    m_Time = m_pPlayer->GetState();
-//                     m_Time = m_pPlayer->GetSpeed();
-//                    break;
+                case sf::Event::MouseMoved:
+                    m_Score = (m_MarioEvent.mouseMove.x * WORLD_VIEW_WIDTH) / m_WinSize.x;
+                    m_CoinCount = (m_MarioEvent.mouseMove.y * WORLD_VIEW_HEIGHT) / m_WinSize.y;
+
+                    m_Level = m_pObstacle->GetIsObstacleAt(m_CoinCount, m_Score + m_FramePosition);
+                    m_Time = m_pPlayer->GetState();
+                     m_Time = m_pPlayer->GetSpeed();
+                    break;
                     
                 default:
                     break;
@@ -139,8 +139,8 @@ void Mario::DrawView() {
         if (Entity::DYING == m_pBonus->GetState()) {
             /// if Bonus Gift is no more present in game then release the instance
             m_pBonus = Bonus::ReleaseInstance();
-            m_CoinCount++;
-            m_Score+=100;
+//            m_CoinCount++;
+//            m_Score+=100;
         }
     }
 }

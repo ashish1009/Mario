@@ -23,7 +23,7 @@ public:
     static Bonus *ReleaseInstance();
     static Bonus *GetInstance();
     
-    bool IsBonusCollion(const Player *pPlayer);
+    bool IsBonusCollion(Player *pPlayer);
     int LoadBlockImage(sf::RenderWindow &m_WinMario, short frameX, Obstacle::ObstacleBlock_s *block);
     
     inline void SetBlock(Obstacle::ObstacleBlock_s *blockType) {
