@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include "TileMap.h"
+//#include "Bonus.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Player Image Index
@@ -12,12 +13,13 @@ static const short STAND = 0;
 static const short DYING = 6;
 static const short RUN[RUN_IDX_ARR_SIZE] = {1, 2, 3};
 static const short JUMP = 5;
+static const short MID_INC = 15;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Player Class
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class Player : private Entity {
+class Player : public Entity {
 public:
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// Player Image Size in Pixel
@@ -25,11 +27,7 @@ public:
     static const short PLAYER_WIDTH = 16;
     static const short PLAYER_HEIGHT_SMALL = 16;
     static const short PLAYER_HEIGHT_BIG = 32;
-    
-    const short gPixelToBeColloidedL = 3;
-    const short gPixelToBeColloidedR = PLAYER_WIDTH - gPixelToBeColloidedL;
-    const short gPixelToColloidD = 3;               /// First pixel from Down to be collided : can be changed
-
+    static const short MAX_JUMP_HEIGHT = 64;
     
 private:
     static inline const std::string PLAYER_IMG_PATH = "Graphics/Mario.png";
@@ -41,6 +39,7 @@ private:
     
     Obstacle *m_pObstacle;
     
+    short m_PlayerHeight;
     short m_PlayerImgIdx;
     short m_PlayerMoveIdx;
     short m_JumpFactor;
@@ -56,10 +55,11 @@ public:
     int LoadPlayerImage(sf::RenderWindow &winMario);
     void CheckPlayerState(const int frameX, sf::RenderWindow &winMario);
     void Jump(const int frameX);
-    void Move(Entity::Direction_e direction, int &frameX, sf::RenderWindow &winMario);
-    bool IsDownCollision (const int frameX);
-    bool IsJumpCollision (const int frameX, const int playerHeight);
-    
+    void Move(Entity::Direction_e direction, int &frameX, sf::RenderWindow &winMario);\
+    void IncreaseSize();
+
+    void IncJumFactor();
+
     inline void SetPlayerImageIdx(const short playerImgIdx) {
         m_PlayerImgIdx = playerImgIdx;
     }
@@ -72,10 +72,14 @@ public:
         m_JumpFactor = 0;
     }
     
-    inline bool IsSideCollision (const int frameX, const int pixelToColloidU, const int xPixelOfPlayer) const {
-        return ((m_pObstacle->GetIsObstacleAt(m_Position.Y - pixelToColloidU, xPixelOfPlayer + frameX)) ||
-                (m_pObstacle->GetIsObstacleAt(m_Position.Y - gPixelToColloidD, xPixelOfPlayer + frameX)));
+    inline int GetPlayerHeight() const {
+        return m_PlayerHeight;
     }
+    
+    /// Pure virtual funxtion
+    bool IsDownCollision (const int frameX) override;
+    bool IsJumpCollision (const int frameX) override;
+    bool IsSideCollision (const int frameX, const int pixelToColloidU, const int xPixelOfPlayer) override;
     
     friend class Mario;
 };

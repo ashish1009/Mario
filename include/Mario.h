@@ -1,7 +1,8 @@
 #pragma once
 
 #include <iostream>
-#include "Player.h"
+#include "Bonus.h"
+//#include "Player.h"
 
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
@@ -27,6 +28,7 @@ private:
     
     Player *m_pPlayer;
     Obstacle *m_pObstacle;
+    Bonus *m_pBonus;
     
     int m_FramePosition;
     int m_Score;

@@ -42,8 +42,8 @@ const Obstacle::Behaviour_e gRow5Behaviour[MAX_BLOCKS] = {
 const Obstacle::Abilities_e gRow5Ability[MAX_BLOCKS] = {
     Obstacle::COIN,
     Obstacle::NO_ABILITY, Obstacle::NO_ABILITY, Obstacle::NO_ABILITY, Obstacle::NO_ABILITY, Obstacle::NO_ABILITY, Obstacle::NO_ABILITY, Obstacle::NO_ABILITY,
-    Obstacle::NO_ABILITY, Obstacle::FIRE_BONUS, Obstacle::NO_ABILITY, Obstacle::STAR_BONUS,
-    Obstacle::FIRE_BONUS,
+    Obstacle::NO_ABILITY, Obstacle::MUSHROOM, Obstacle::NO_ABILITY, Obstacle::STAR_BONUS,
+    Obstacle::MUSHROOM,
     Obstacle::NO_ABILITY, Obstacle::NO_ABILITY, Obstacle::NO_ABILITY,
     Obstacle::NO_ABILITY, Obstacle::COIN, Obstacle::COIN, Obstacle::NO_ABILITY
 };
@@ -75,7 +75,7 @@ const Obstacle::Behaviour_e gRow9Behaviour[MAX_BLOCKS] = {
 const Obstacle::Abilities_e gRow9Ability[MAX_BLOCKS] = {
     Obstacle::COIN,
     Obstacle::NO_ABILITY, Obstacle::COIN, Obstacle::NO_ABILITY, Obstacle::MUSHROOM,
-    Obstacle::NO_ABILITY, Obstacle::FIRE_BONUS, Obstacle::NO_ABILITY,
+    Obstacle::NO_ABILITY, Obstacle::MUSHROOM, Obstacle::NO_ABILITY,
     Obstacle::NO_ABILITY,
     Obstacle::NO_ABILITY, Obstacle::NO_ABILITY,
     Obstacle::COIN, Obstacle::COIN, Obstacle::COIN,
@@ -176,10 +176,9 @@ void Obstacle::InitObstacles() {
 /// Brief      : Set Each Pixels of BLOCK as obstacle
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Obstacle::SetObstaclePixels(const int row, const int col) {
-    float tileSize = (BLOCK_SIZE == GetBlockSizeAt(row, col) ? BLOCK_SIZE : BLOCK_SIZE * 2); //  TODO;
-    float blockX = (col * BLOCK_SIZE);
-    float blockY = (row * BLOCK_SIZE) + (BLOCK_SIZE >> 1);  /// Shift for lasg half ground block
-    
+    float tileSize = (BLOCK_SIZE == GetBlockSizeAt(row, col) ? BLOCK_SIZE : BLOCK_SIZE << 1); //  TODO;
+    float blockX = (col << BLOCK_SIZE_BIT);
+    float blockY = (row << BLOCK_SIZE_BIT) + (BLOCK_SIZE >> 1);  /// Shift for lasg half ground block
     
     for (int i = blockY - BLOCK_SIZE; i < blockY; i++) {
         for (int j = blockX; j < blockX + tileSize; j++) {
@@ -190,3 +189,6 @@ void Obstacle::SetObstaclePixels(const int row, const int col) {
     }
 }
 
+void Obstacle::SetBlock (const int row, const int col) {
+    
+}

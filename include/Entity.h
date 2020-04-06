@@ -19,7 +19,11 @@ public:
         
         Position_s(const int x, const int y)
         : X(x), Y(y) {}
-
+        
+        void SetPositionLocal (const int x, const int y) {
+            X = x;
+            Y = y;
+        }
     };
     
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -45,7 +49,8 @@ public:
         P1_REGULAR = 0, // No Special Ability for Player 1
         P2_REGULAR = 1, // No Special Ability for Player 2
         FIRABLE = 2,    // Entity can Fire
-        INVISIBLE = 3   // Entity can never be Dead
+        INVISIBLE = 3,   // Entity can never be Dead
+        INCREASING = 4,
     };
     
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -69,11 +74,16 @@ protected:
     Ability_e m_Ability;
     Size_e m_Size;
     Speed m_Speed;
+    State_e m_PrevState;
     State_e m_State;
     
 public:
     Entity();
     ~Entity();
+    
+    virtual bool IsDownCollision (const int frameX) = 0;
+    virtual bool IsJumpCollision (const int frameX) = 0;
+    virtual bool IsSideCollision (const int frameX, const int pixelToColloidU, const int xPixelOfPlayer) = 0;
     
     ///////////////////////////////////////////////////////////////
     ///     Get Entity
@@ -100,6 +110,10 @@ public:
 
     inline const State_e GetState() const {
         return m_State;
+    }
+    
+    inline const State_e GetPrevState() const {
+        return m_PrevState;
     }
 
     ///////////////////////////////////////////////////////////////
@@ -128,5 +142,9 @@ public:
 
     inline void SetState(const State_e state) {
         m_State = state;
+    }
+    
+    inline void SetPrevState(const State_e state) { /// store previous state only in case of running and jumping
+        m_PrevState = m_State;
     }
 };

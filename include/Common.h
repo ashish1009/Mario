@@ -3,6 +3,7 @@
 
 /// Path for Images used in Game
 const std::string ResourcePath = "Resources/";
+const std::string BLOCK_IMG_PATH = "Graphics/Item.png";
 
 /// Window Size Factro From World View
 const short WINDOW_WORLD_FACTOR = 4;

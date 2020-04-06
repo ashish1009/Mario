@@ -2,11 +2,20 @@
 
 #include <iostream>
 #include <vector>
+#include "Entity.h"
 
 const short NUM_COL = 212;
 const short NUM_ROW = 15;
 const short BLOCK_SIZE = 16;
 const short BLOCK_SIZE_BIT = 4;
+
+const short gPixelToBeLandedL = 3;
+const short gPixelToBeLandedR = BLOCK_SIZE - gPixelToBeLandedL;
+
+const short gPixelToBeUpColloidedL = 5;
+const short gPixelToBeUpColloidedR = BLOCK_SIZE - gPixelToBeUpColloidedL;
+
+const short gPixelToColloidD = 5;               /// First pixel from Down to be collided : can be changed
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Obstacle Class
@@ -35,20 +44,22 @@ public:
     
     enum Abilities_e : short{
         NO_ABILITY = -1,
-        COIN = 1,
-        MUSHROOM = 2,
-        FIRE_BONUS = 3,
-        STAR_BONUS = 4,
+        MUSHROOM = 0,
+        FIRE_BONUS = 1,
+        STAR_BONUS = 2,
+        COIN = 5,
     };
     
-    struct Obstacle_s {
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// Strcture for each Pixel
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    struct ObstaclePixel_s {
         bool bIsObstacle;
         Behaviour_e behaviour;
         Abilities_e abilities;
-        int size;
         
-        Obstacle_s()
-        :bIsObstacle(false), behaviour(NO_BEHAV), abilities(NO_ABILITY), size(BLOCK_SIZE) {
+        ObstaclePixel_s()
+        :bIsObstacle(false), behaviour(NO_BEHAV), abilities(NO_ABILITY) {
         }
         
         void SetObstacle (bool bIsObstacle, Behaviour_e behaviour, Abilities_e abilities, int size = BLOCK_SIZE) {
@@ -58,13 +69,32 @@ public:
         }
     };
     
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// Strcture for each Block
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    struct ObstacleBlock_s {
+        bool bIsObstacle;
+        bool bIsPopped;
+        bool bIsEmpty;
+        Behaviour_e behaviour;
+        Abilities_e abilities;
+        int size;
+        short upPopped;
+        int xPos;
+        int yPos;
+        
+        ObstacleBlock_s()
+        :bIsObstacle(false), bIsPopped(false), bIsEmpty(false), behaviour(NO_BEHAV), abilities(NO_ABILITY), size(BLOCK_SIZE), upPopped(0) {
+        }
+    };
+    
 private:
     static Obstacle *m_pInstance;
     
-    std::vector<std::vector<Obstacle_s>> m_Obstacle;
+    std::vector<std::vector<ObstaclePixel_s>> m_Obstacle;
     
     ///Row' refer to position Y and column refer to position X
-    Obstacle_s m_BlockType[NUM_ROW][NUM_COL];
+    ObstacleBlock_s m_BlockType[NUM_ROW][NUM_COL];
     
 private:
     Obstacle();
@@ -79,6 +109,8 @@ public:
     void PushLastColumnPixels();
     void PopFirstColumnPixels();
     
+    void SetBlock (const int row, const int col);
+    
     void SetObstaclePixels(const int row, const int col);
     
     void GetBlock(const int row, const int col);
@@ -88,5 +120,10 @@ public:
     Abilities_e GetBlockAbilityAt(const int i, const int j) const;
     int GetBlockSizeAt(const int i, const int j) const;
     bool GetIsObstacleAt(const int i, const int j) const;
+     
+    void SetPoppedBlock(const int row, const int col);
+    bool IsPoppedBlock(const int i, const int j) const;
+    
+    ObstacleBlock_s *GetBlockReference(const int i, const int j);
 };
 
