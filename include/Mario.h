@@ -36,13 +36,9 @@ private:
     short m_Level;
     short m_Time;
     
-private:
-    inline void ResetScreen();
-    inline void SetTime();
-    
+private:    
     void DrawView();
     void DrawBlocks();
-    void DrawPlayer();
     void PrintContent();
     void PrintText(const char *printStuff, short variable, const float xPosition);
     

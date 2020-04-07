@@ -7,6 +7,7 @@
 class Bonus : public Entity{
 private:
     static Bonus* m_pInstance;
+    sf::Vector2f m_TileVector;
     
     TileMap m_Map;
     short m_IdxY;
@@ -23,7 +24,6 @@ public:
     static Bonus *ReleaseInstance();
     static Bonus *GetInstance();
     
-    bool IsBonusCollion(Player *pPlayer);
     int LoadBlockImage(sf::RenderWindow &m_WinMario, short frameX, Obstacle::ObstacleBlock_s *block);
     
     inline void SetBlock(Obstacle::ObstacleBlock_s *blockType) {
@@ -47,6 +47,7 @@ public:
     }
 
     /// Pure Virtual Funxtion
+    bool IsPlayerCollision() override;
     bool IsDownCollision (const int frameX) override;
     bool IsJumpCollision (const int frameX) override;
     bool IsSideCollision (const int frameX, const int pixelToColloidU, const int xPixelOfPlayer) override;

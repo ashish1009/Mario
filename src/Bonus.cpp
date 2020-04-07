@@ -4,7 +4,7 @@
 Bonus *Bonus::m_pInstance = nullptr;
 
 Bonus::Bonus()
-: m_IdxY(0), m_pBlock(nullptr) {
+: m_TileVector(BLOCK_SIZE, BLOCK_SIZE), m_IdxY(0), m_IdxX(0), m_pBlock(nullptr) {
 //    LogInfo(BIT_BONUS, "Bonus::Bonus() : Constructor called \n");
 }
 
@@ -17,7 +17,7 @@ Bonus::~Bonus() {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Bonus *Bonus::CreateInstance() {
     if (nullptr == m_pInstance) {
-//        LogInfo(BIT_BONUS, "Bonus::GetInstance(), Creating Bonus Instance() \n");
+        LogInfo(BIT_BONUS, "Bonus::GetInstance(), Creating Bonus Instance() \n");
         m_pInstance = new Bonus();
     }
     return m_pInstance;
@@ -35,21 +35,23 @@ Bonus *Bonus::GetInstance() {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Bonus *Bonus::ReleaseInstance() {
     if (nullptr != m_pInstance) {
-//        LogInfo(BIT_BONUS, "Bonus::ReleaseInstance(), Deleting Bonus Instance() \n");
+        LogInfo(BIT_BONUS, "Bonus::ReleaseInstance(), Deleting Bonus Instance() \n");
         delete m_pInstance;
         m_pInstance = nullptr;
     }
     return m_pInstance;
 }
 
-int Bonus::LoadBlockImage(sf::RenderWindow &winMario, short frameX, Obstacle::ObstacleBlock_s *block) { /// TODO :  if bonus is not used  then rmv it frm here & from bonus class m_Block
-    static int ii = 0;
+int Bonus::LoadBlockImage(sf::RenderWindow &winMario, short frameX, Obstacle::ObstacleBlock_s *block) {
+    if (Obstacle::NO_ABILITY == block->abilities) {
+        return EXIT_SUCCESS;
+    }
     TileMap::PrintControl_s printControl;
 
     printControl.tileSet = ResourcePath + BLOCK_IMG_PATH;
     printControl.tile = 0;
     printControl.bInverted = false;
-    printControl.tileSize = sf::Vector2f(BLOCK_SIZE, BLOCK_SIZE);
+    printControl.tileSize = m_TileVector;
 
     if (Obstacle::COIN == block->abilities) {
         if (m_IdxY++ < 64) {
@@ -58,54 +60,34 @@ int Bonus::LoadBlockImage(sf::RenderWindow &winMario, short frameX, Obstacle::Ob
         else {
             SetState(State_e::DYING);
         }
-        
-        Obstacle::Behaviour_e objBehav = Obstacle::Behaviour_e((m_IdxY % 2) + Obstacle::COIN_FRONT);
-        
-        printControl.imgY = objBehav << BLOCK_SIZE_BIT;
-    } /// if (Obstacle::COIN == block->abilities)
+        printControl.imgY = ((m_IdxY % 2) + Obstacle::COIN_FRONT) << BLOCK_SIZE_BIT;
+    }
     else if (Obstacle::MUSHROOM == block->abilities) {
         Player *pPlayer = Player::GetInstance();  /// Doesnt create new instance if already created it return th epointer else null
-        printControl.imgY = block->abilities << BLOCK_SIZE_BIT;
-
         if (pPlayer) {
             if (SMALL == pPlayer->GetSize()) {
+                printControl.imgY = Obstacle::MUSHROOM << BLOCK_SIZE_BIT;
                 if (AIR == m_State) {
-                    if (IsDownCollision(frameX)) {
-                        SetState(GROUND);
-                    }
-                    else {
-                        SetPosition(m_Position.X, m_Position.Y + 1);
-                    }
+                    (IsDownCollision(frameX)) ? SetState(GROUND) : SetPosition(m_Position.X, m_Position.Y + 1);
                 } /// if (AIR == m_State)
                 else {
-                    int xPixel = m_Position.X;
-                    if (RIGHT == m_Direction) {
-                        SetPosition(m_Position.X + 1, m_Position.Y);
-                        xPixel += BLOCK_SIZE;
-                    }
-                    else {
-                        SetPosition(m_Position.X - 1, m_Position.Y);
-                    }
-                    
-                    if (IsSideCollision(frameX, BLOCK_SIZE, xPixel)) {
-                        SetDirection(LEFT);
-                    }
-                    if (DYING != m_State) {
-                        SetState(AIR);
-                    }
+                    int xPixel = ((RIGHT == m_Direction) ? m_Position.X + BLOCK_SIZE : m_Position.X);
+                    (IsSideCollision(frameX, BLOCK_SIZE, xPixel)) ? SetDirection(LEFT) :  SetPosition(m_Position.X + m_Direction, m_Position.Y);
+                    SetState(AIR);
                 }
             }
-            else { /// if Player is Big then Mushroom is replaced with Fire
+            else { /// if Player is Big then Mushroom is replaced with Fire Flower
                 printControl.imgY = Obstacle::FIRE_BONUS << BLOCK_SIZE_BIT;
                 SetPosition(m_IdxX - (frameX- m_FramePos), m_Position.Y);
             } ///if (SMALL == pPlayer->GetSize())
-            if (IsBonusCollion(pPlayer)) {
+            
+            if (IsPlayerCollision()) {
                 m_State = DYING;
-                printControl.tile = 3;
             }
         } /// if (pPlayer)
         else {
             LogError(BIT_BONUS, "Bonus::LoadBlockImage() : No Player Exist \n");
+            return EXIT_FAILURE;
         }
     } /// else if (Obstacle::MUSHROOM == block->abilities)
     
@@ -119,8 +101,12 @@ int Bonus::LoadBlockImage(sf::RenderWindow &winMario, short frameX, Obstacle::Ob
     return EXIT_SUCCESS;
 }
 
-bool Bonus::IsBonusCollion(Player *pPlayer) {
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Brief      : Detect the collision with player
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+bool Bonus::IsPlayerCollision() {
     bool bResult = false;
+    Player *pPlayer = Player::GetInstance();
     
     if (pPlayer->GetPosition().X + Player::PLAYER_WIDTH == m_Position.X) {
         for (int i = 0; i < BLOCK_SIZE; i++) {
@@ -144,14 +130,17 @@ bool Bonus::IsBonusCollion(Player *pPlayer) {
             }
         }
     }
+    else if (pPlayer->GetPosition().Y == m_Position.Y - BLOCK_SIZE) {
+        for (int i = 0; i < BLOCK_SIZE; i++) {
+            const int playerPixelX = pPlayer->GetPosition().X + i;
+            if ((playerPixelX == m_Position.X) || (playerPixelX == m_Position.X + BLOCK_SIZE - 1)) {
+                bResult = true;
+            }
+        }
+    }
     if (bResult) {
         if (m_pBlock->abilities == Obstacle::MUSHROOM) {
-            if (SMALL == pPlayer->GetSize()) {
-                pPlayer->IncreaseSize();
-            }
-            else {
-                pPlayer->SetAbility(FIRABLE);
-            }
+            (SMALL == pPlayer->GetSize()) ? pPlayer->IncreaseSize() : pPlayer->SetAbility(FIRABLE);
         }
     }
     return bResult;

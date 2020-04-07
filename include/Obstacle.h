@@ -7,7 +7,6 @@
 const short NUM_COL = 212;
 const short NUM_ROW = 15;
 const short BLOCK_SIZE = 16;
-const short BLOCK_SIZE_BIT = 4;
 
 const short gPixelToBeLandedL = 3;
 const short gPixelToBeLandedR = BLOCK_SIZE - gPixelToBeLandedL;
@@ -16,6 +15,14 @@ const short gPixelToBeUpColloidedL = 5;
 const short gPixelToBeUpColloidedR = BLOCK_SIZE - gPixelToBeUpColloidedL;
 
 const short gPixelToColloidD = 5;               /// First pixel from Down to be collided : can be changed
+
+const short gRow9ForBlock = 9;
+const short gRow5ForBlock = 5;
+
+const short gNumRowToDraw = 2;
+const short gRowBlockArr[gNumRowToDraw] = {gRow5ForBlock, gRow9ForBlock};
+
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Obstacle Class
@@ -39,7 +46,8 @@ public:
         PIPE_BASE = 12,
         BASE_HALF = 13,
         PRINCES = 14,
-        BLANK = 18,
+        FIRE_BULLET = 18,
+        BLANK = 17,
     };
     
     enum Abilities_e : short{
@@ -104,7 +112,7 @@ private:
     
 public:
     static Obstacle *GetInstance();
-    static void ReleaseInstance();
+    static Obstacle *ReleaseInstance();
     
     void PushLastColumnPixels();
     void PopFirstColumnPixels();

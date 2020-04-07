@@ -6,9 +6,6 @@ const short MAX_STEP = 27;
 
 const short MAX_BLOCKS = 21;
 
-const short gRow9ForBlock = 9;
-const short gRow5ForBlock = 5;
-
 /// Constanct for defininging specific Block
 const short gHollowColIdx[MAX_HOLLOW_BLOCK] = {69, 70, 86, 87, 88, 153, 154};
 const short gPipeColIdx[MAX_PIPE] = {28, 38, 46, 57, 163, 179};
@@ -166,10 +163,10 @@ void Obstacle::InitObstacles() {
             GetBlock(i, j);
         }
     }
-    for (int j = 0; j < 6; j++) {
-        m_BlockType[12][j].behaviour = BONUS;
-        SetObstaclePixels(12, j);
-    }
+//    for (int j = 0; j < 20; j++) {
+//        m_BlockType[12][j].behaviour = BONUS;
+//        SetObstaclePixels(12, j);
+//    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

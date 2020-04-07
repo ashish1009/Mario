@@ -1,8 +1,7 @@
 #pragma once
 
 #include <iostream>
-#include "TileMap.h"
-//#include "Bonus.h"
+#include "Fire.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Player Image Index
@@ -50,21 +49,21 @@ private:
     
 public:
     static Player *GetInstance();
-    static void ReleaseInstance();
+    static Player *ReleaseInstance();
     
     int LoadPlayerImage(sf::RenderWindow &winMario);
     void CheckPlayerState(const int frameX, sf::RenderWindow &winMario);
     void Jump(const int frameX);
     void Move(Entity::Direction_e direction, int &frameX, sf::RenderWindow &winMario);\
     void IncreaseSize();
-
     void IncJumFactor();
+    void Fire();
 
-    inline void SetPlayerImageIdx(const short playerImgIdx) {
+    inline void SetImgIdx(const short playerImgIdx) {
         m_PlayerImgIdx = playerImgIdx;
     }
     
-    inline void RestePlayerMoveIdx() {
+    inline void ResetMoveImgIdx() {
         m_PlayerMoveIdx = 0;
     }
     
@@ -80,6 +79,7 @@ public:
     bool IsDownCollision (const int frameX) override;
     bool IsJumpCollision (const int frameX) override;
     bool IsSideCollision (const int frameX, const int pixelToColloidU, const int xPixelOfPlayer) override;
+    bool IsPlayerCollision () override;
     
     friend class Mario;
 };

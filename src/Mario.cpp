@@ -12,8 +12,10 @@ const int TIME_LIMIT = 400;
 /// Brief      : Constructor of Mario class
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Mario::Mario()
-: m_WinMario({WIN_WIDTH, WIN_HEIGHT}, "Super MArio"),
-m_pBonus(nullptr), m_FramePosition(0), m_Score(0), m_CoinCount(0), m_Level(1), m_Time(0) {
+: m_WinMario({WIN_WIDTH, WIN_HEIGHT}, "Super MArio"), m_WinSize(0, 0),
+m_pPlayer(nullptr), m_pObstacle(nullptr), m_pBonus(nullptr),
+m_FramePosition(0), m_Score(0), m_CoinCount(0), m_Level(1), m_Time(0) {
+    
     m_MarioTexture.loadFromFile(ResourcePath + "graphics/level1.png");
     m_MarioSprite.setTexture(m_MarioTexture);
     
@@ -34,8 +36,9 @@ m_pBonus(nullptr), m_FramePosition(0), m_Score(0), m_CoinCount(0), m_Level(1), m
 /// Brief      : Destructor of Mario class
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Mario::~Mario() {
-    m_pPlayer->ReleaseInstance();
-    m_pObstacle->ReleaseInstance();
+    m_pPlayer = Player::ReleaseInstance();
+    m_pObstacle = Obstacle::ReleaseInstance();
+    m_pBonus = Bonus::ReleaseInstance();
     
     LogInfo(BIT_MARIO, "Mario::~Mario(), Destructor called \n");
 }
@@ -46,7 +49,18 @@ Mario::~Mario() {
 void Mario::PlayGame() {
     LogInfo(BIT_MARIO, "Mario::PlayeGame(), Game is On... \n");
     
-    m_FramePosition = 250;
+    auto SetTime = [&]() { /// Set the time as per clock
+        sf::Time time = m_Clock.getElapsedTime();
+        m_Time = time.asSeconds();
+    };
+    
+    auto ResetScreen = [&]() {
+        m_WinSize = m_WinMario.getSize();
+        m_WinMario.clear();
+        m_MarioView.reset(sf::FloatRect(0.f, 0.f, WORLD_VIEW_WIDTH, WORLD_VIEW_HEIGHT));
+    };
+    
+    m_FramePosition = 250; /// For Debug
     while (m_WinMario.isOpen()) {
         ResetScreen();
         SetTime();
@@ -59,12 +73,10 @@ void Mario::PlayGame() {
                     break;
                 
                 case sf::Event::KeyPressed:
-                    if (m_MarioEvent.key.code == sf::Keyboard::LShift) {
-                        if (Entity::AIR != m_pPlayer->GetState()) {
-                            m_pPlayer->SetState(Entity::JUMPING);
-                        }
+                    if ((m_MarioEvent.key.code == sf::Keyboard::LShift) &&( Entity::AIR != m_pPlayer->GetState())) {
+                        m_pPlayer->SetState(Entity::JUMPING);
                     }
-                    else {
+                    {
                         if (m_MarioEvent.key.code == sf::Keyboard::Right) {
                             m_pPlayer->Move(Entity::RIGHT, m_FramePosition, m_WinMario);
                         }
@@ -72,14 +84,16 @@ void Mario::PlayGame() {
                             m_pPlayer->Move(Entity::LEFT, m_FramePosition, m_WinMario);
                         }
                     }
+                    if (m_MarioEvent.key.code == sf::Keyboard::Z) {
+                        m_pPlayer->Fire();
+                    }
                     break;
                     
                 case sf::Event::KeyReleased:
                     if ((m_MarioEvent.key.code == sf::Keyboard::Right) || (m_MarioEvent.key.code == sf::Keyboard::Left)) {
-                        m_pPlayer->SetPlayerImageIdx(PlayerImgIdx::STAND);
-                        m_pPlayer->RestePlayerMoveIdx();
-                        m_pPlayer->SetSpeed(Entity::DEFAULT_SPEED);
-//                        m_pPlayer->SetState(Entity::AIR);
+                        m_pPlayer->SetImgIdx(PlayerImgIdx::STAND);
+                        m_pPlayer->ResetMoveImgIdx();
+                        m_pPlayer->ResetSpeed();
                     }
                     break;
                                         
@@ -89,7 +103,7 @@ void Mario::PlayGame() {
 
                     m_Level = m_pObstacle->GetIsObstacleAt(m_CoinCount, m_Score + m_FramePosition);
                     m_Time = m_pPlayer->GetState();
-                     m_Time = m_pPlayer->GetSpeed();
+                    m_Time = m_pPlayer->GetSpeed();
                     break;
                     
                 default:
@@ -97,28 +111,10 @@ void Mario::PlayGame() {
             } /// switch (m_MarioEvent.type)
         } /// while (m_WinMario.pollEvent(m_MarioEvent))
         DrawView();
-//        DrawPlayer();
         PrintContent();
         
         m_WinMario.display();
      } /// while (m_WinMario.isOpen())
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/// Brief      : Reset the contents of Screen periodically
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-inline void Mario::ResetScreen() {
-    m_WinSize = m_WinMario.getSize();
-    m_WinMario.clear();
-    m_MarioView.reset(sf::FloatRect(0.f, 0.f, WORLD_VIEW_WIDTH, WORLD_VIEW_HEIGHT));
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/// Brief      : increase m_time per second
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-inline void Mario::SetTime() {
-    sf::Time time = m_Clock.getElapsedTime();
-    m_Time = time.asSeconds();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -133,11 +129,12 @@ void Mario::DrawView() {
     DrawBlocks();
     
     if (m_pBonus) {
-        /// As block is popped the object is created then load the images
-        m_pBonus->LoadBlockImage(m_WinMario, m_FramePosition, m_pBonus->getBlock());
+        if (EXIT_FAILURE == m_pBonus->LoadBlockImage(m_WinMario, m_FramePosition, m_pBonus->getBlock())) {
+            LogError(BIT_MARIO, "Mario::DrawView(), Can not load Bonus image \n");
+            m_WinMario.close();
+        }
         
-        if (Entity::DYING == m_pBonus->GetState()) {
-            /// if Bonus Gift is no more present in game then release the instance
+        if (Entity::DYING == m_pBonus->GetState()) {    /// if Bonus Gift is no more present in game then release the instance
             m_pBonus = Bonus::ReleaseInstance();
 //            m_CoinCount++;
 //            m_Score+=100;
@@ -150,48 +147,34 @@ void Mario::DrawView() {
 ///         m_WinMario get Updated
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Mario::DrawBlocks() {
-    const int cNumColView = WORLD_VIEW_WIDTH >> BLOCK_SIZE_BIT;     /// to divide by Block SIze = 16
     const int xOffset = m_FramePosition >> BLOCK_SIZE_BIT;          /// to divide by Block SIze = 16
     
-    for (int i = 0; i < NUM_ROW; i++) {
-        for (int j = 0; j <= cNumColView; j++) {
-            Obstacle::ObstacleBlock_s *blockObst = m_pObstacle->GetBlockReference(i, j + xOffset);
-            if (Obstacle::BRICK == blockObst->behaviour || Obstacle::BONUS == blockObst->behaviour) {
+    for (int i = 0; i < gNumRowToDraw; i++) {
+        for (int j = 0; j <= gNumColView; j++) {
+            Obstacle::ObstacleBlock_s *blockObst = m_pObstacle->GetBlockReference(gRowBlockArr[i], j + xOffset);
+            
+            if (Obstacle::NO_BEHAV != blockObst->behaviour) {
+                blockObst->xPos = ((j + xOffset) << BLOCK_SIZE_BIT) - m_FramePosition;     /// col  * 16 - Frame : As Frame moves left then we need to check block with that offset rather than 0
+                blockObst->yPos = (gRowBlockArr[i] << BLOCK_SIZE_BIT) + (BLOCK_SIZE >> 1); /// row * 16 + 8           : Shift 8  for last half ground block
                 
-                /// Only Brick and Bonus Need to draw at run time As only these two will change at run time
                 Block block;
-                if (EXIT_FAILURE == block.LoadBlockImage(m_WinMario, m_FramePosition, i, j + xOffset, blockObst)) {
+                if (EXIT_FAILURE == block.LoadBlockImage(m_WinMario, blockObst)) {
                     m_WinMario.close();
                 }
-                if (blockObst->bIsPopped && !blockObst->bIsEmpty) {
-                    /// If Block is popped and it is not empty it will create the Bonus object for coin of Mushroom
+                
+                if (blockObst->bIsPopped && !blockObst->bIsEmpty && blockObst->upPopped == 1) {
+                    /// If Block is popped and it is not empty it will create the Bonus object for coin of Mushroom ( blockObst->upPopped == 1 :  to create it just once as other two eill true for 8 times)
                     m_pBonus = Bonus::CreateInstance();
-                    m_pBonus->SetFramePos(m_FramePosition);         /// Store the current frame position, fo future use in loadBlockImage
-                    m_pBonus->SetXPos(blockObst->xPos);
-                    
                     if (m_pBonus) {
-                        m_pBonus->SetBlock(blockObst);              /// Store the block type
-                        if (!blockObst->bIsEmpty) {
-                            /// Store the Initial position of Gift as 1 size up than block
-                            m_pBonus->SetPosition(blockObst->xPos, blockObst->yPos - BLOCK_SIZE);
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/// Brief      : Draw Player Image according to its state
-///         m_WinMario get Updated
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Mario::DrawPlayer() {
-//    m_pPlayer->CheckPlayerState(m_FramePosition, m_WinMario);
-//    if (EXIT_FAILURE == m_pPlayer->LoadPlayerImage(m_WinMario)) {
-//        LogError(BIT_MARIO, " Mario::DrawPlayer() : Can Not Load Player Image \n");
-//        m_WinMario.close();
-//    }
+                        m_pBonus->SetFramePos(m_FramePosition);                                 /// Store the current frame position, fo future use in loadBlockImage
+                        m_pBonus->SetXPos(blockObst->xPos);                                     /// Store the current X position, fo future use in loadBlockImage
+                        m_pBonus->SetBlock(blockObst);                                          /// Store the block type
+                        m_pBonus->SetPosition(blockObst->xPos, blockObst->yPos - BLOCK_SIZE);   /// Store the Initial position of Gift as 1 size up than block
+                    } /// if (m_pBonus)
+                } /// if (blockObst->bIsPopped && !blockObst->bIsEmpty && blockObst->upPopped == 1)
+            } /// if (Obstacle::NO_BEHAV != blockObst->behaviour)
+        } /// for (int j = 0; j <= gNumColView; j++)
+    } /// for (int i = 0; i < gNumRowToDraw; i++)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

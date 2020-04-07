@@ -38,7 +38,7 @@ public:
     /// Enum to define Direction of moving Entity
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     enum Direction_e : short {
-        LEFT = 0,
+        LEFT = -1,
         RIGHT = 1
     };
     
@@ -84,6 +84,8 @@ public:
     virtual bool IsDownCollision (const int frameX) = 0;
     virtual bool IsJumpCollision (const int frameX) = 0;
     virtual bool IsSideCollision (const int frameX, const int pixelToColloidU, const int xPixelOfPlayer) = 0;
+    
+    virtual bool IsPlayerCollision() = 0;
     
     ///////////////////////////////////////////////////////////////
     ///     Get Entity
@@ -136,8 +138,8 @@ public:
         m_Size = size;
     }
 
-    inline void SetSpeed(const Speed speed) {
-        m_Speed = speed;
+    inline void ResetSpeed() {
+        m_Speed = DEFAULT_SPEED;
     }
 
     inline void SetState(const State_e state) {

@@ -15,6 +15,7 @@ Player::Player()
 : m_TileVector(PLAYER_WIDTH, PLAYER_HEIGHT_SMALL), m_PlayerImgIdx(PlayerImgIdx::STAND),
     m_PlayerHeight(PLAYER_HEIGHT_SMALL), m_PlayerMoveIdx(0), m_JumpFactor(0) {
     SetPosition(PLAYER_START_X, 150);
+//        IncreaseSize();
 
     m_pObstacle = Obstacle::GetInstance();
     LogInfo(BIT_PLAYER, "Player::Player(), Player Constructor called !! \n");
@@ -42,12 +43,13 @@ Player *Player::GetInstance() {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Brief      : delete the created Instance
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Player::ReleaseInstance() {
+Player *Player::ReleaseInstance() {
     if (nullptr != m_pInstance) {
         LogInfo(BIT_PLAYER, "Player::ReleaseInstance(), Deleting Player Instance() \n");
         delete m_pInstance;
         m_pInstance = nullptr;
     }
+    return m_pInstance;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -85,15 +87,13 @@ int Player::LoadPlayerImage(sf::RenderWindow &winMario) {
 /// Brief      : Check state of Playe(     if AIR then Free fall if jumping then jump
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Player::CheckPlayerState(const int frameX, sf::RenderWindow &winMario) {
-    Obstacle *pObstacle = Obstacle::GetInstance();
-    
     if (JUMPING == m_State) {
         Jump(frameX);
     }
     else {
         if (IsDownCollision(frameX)) {
             /// Land Player
-            SetSpeed(DEFAULT_SPEED);
+            ResetSpeed();
             SetState(GROUND);                   /// if Landed change state to Ground
             ResetJumpFactor();
         }
@@ -121,7 +121,7 @@ void Player::IncreaseSize() {
 /// Brief      :  Jump Player
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Player::Jump(const int frameX) {
-    SetPlayerImageIdx(PlayerImgIdx::JUMP);
+    SetImgIdx(PlayerImgIdx::JUMP);
     
     if (MAX_JUMP_HEIGHT < m_JumpFactor) {
         SetState(AIR);                                      /// On reaching heighest lvel change state to Air so tha it may free fall
@@ -157,10 +157,9 @@ void Player::Move(Entity::Direction_e direction, int &frameX, sf::RenderWindow &
     
     for (int i = 0; i < m_Speed; i++) {
         if (RUNNING == m_State) {
-            SetPlayerImageIdx(PlayerImgIdx::RUN[m_PlayerMoveIdx++]);
+            SetImgIdx(PlayerImgIdx::RUN[m_PlayerMoveIdx++]);
             m_PlayerMoveIdx %= PlayerImgIdx::RUN_IDX_ARR_SIZE;
         }
-        
         else if (JUMPING == m_State) {
             Jump(frameX);
         }
@@ -188,6 +187,15 @@ void Player::Move(Entity::Direction_e direction, int &frameX, sf::RenderWindow &
         } /// (!IsSideCollision(frameX, pixelToColloidU, xPixelOfPlayer))
     } /// for (int i = 0; i < m_Speed; i++)
     SetPrevState(RUNNING);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Brief : IF player is firable then fires the bullet
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Player::Fire() {
+    if (FIRABLE == m_Ability) {
+        std::cout << "Fire \n";
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -265,11 +273,15 @@ bool Player::IsSideCollision (const int frameX, const int pixelToColloidU, const
     
     /// Shift the plyer Up if few pixels are Down for landing and those pixels are not enough for for side collision
     else if (m_pObstacle->GetIsObstacleAt (m_Position.Y - gPixelToColloidD + 2, xPixelOfPlayer + frameX) && (!bIsSideDownCollision)) {
-        SetPosition(m_Position.X + gPixelToBeLandedL, m_Position.Y - gPixelToColloidD - 4);
+        SetPosition(m_Position.X + gPixelToBeLandedL, m_Position.Y - gPixelToColloidD - 3);
         return false;
     }
     
     else {
         return false;
     }
+}
+
+bool Player::IsPlayerCollision() {
+    return false;
 }
