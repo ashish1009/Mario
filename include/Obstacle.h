@@ -31,13 +31,8 @@ class Obstacle {
 public:
     enum Behaviour_e : short {
         NO_BEHAV = -1,
-        FLOWER = 0,
-        FIRE_LEAFE = 1,
-        STAR = 2,
         BRICK = 3,
         BONUS = 4,
-        COIN_FRONT = 5,
-        COIN_TILT = 6,
         END_FLAG = 7,
         BASE = 8,
         SCORE = 9,
@@ -46,16 +41,17 @@ public:
         PIPE_BASE = 12,
         BASE_HALF = 13,
         PRINCES = 14,
-        FIRE_BULLET = 18,
         BLANK = 17,
     };
     
     enum Abilities_e : short{
         NO_ABILITY = -1,
         MUSHROOM = 0,
-        FIRE_BONUS = 1,
-        STAR_BONUS = 2,
+        FIRE_LEAFE = 1,
+        STAR = 2,
         COIN = 5,
+        COIN_TILT = 6,
+        FIRE_BULLET = 18,
     };
     
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -81,15 +77,15 @@ public:
     /// Strcture for each Block
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     struct ObstacleBlock_s {
+        int xPos;       /// x Position of Block relative to frame in Pixel
+        int yPos;       /// y Position of Block relative to frame in Pixel
+        short size;
+        short upPopped;
+        Behaviour_e behaviour;
+        Abilities_e abilities;
         bool bIsObstacle;
         bool bIsPopped;
         bool bIsEmpty;
-        Behaviour_e behaviour;
-        Abilities_e abilities;
-        int size;
-        short upPopped;
-        int xPos;
-        int yPos;
         
         ObstacleBlock_s()
         :bIsObstacle(false), bIsPopped(false), bIsEmpty(false), behaviour(NO_BEHAV), abilities(NO_ABILITY), size(BLOCK_SIZE), upPopped(0) {
@@ -114,24 +110,20 @@ public:
     static Obstacle *GetInstance();
     static Obstacle *ReleaseInstance();
     
-    void PushLastColumnPixels();
-    void PopFirstColumnPixels();
+    void ResetBlockPixels(const unsigned int row, const unsigned int col);
     
-    void SetBlock (const int row, const int col);
+    void SetObstaclePixels(const unsigned int row, const unsigned int col);
+    void SetBlock(const unsigned int row, const unsigned int col);
+    void SetObstacle(const int unsigned X, const unsigned int Y, Behaviour_e behaviour, Abilities_e ability);
     
-    void SetObstaclePixels(const int row, const int col);
-    
-    void GetBlock(const int row, const int col);
-    void SetObstacle(const int X, const int Y, Behaviour_e behaviour, Abilities_e ability);
-    
-    Behaviour_e GetBlockTypeAt(const int i, const int j) const;
-    Abilities_e GetBlockAbilityAt(const int i, const int j) const;
-    int GetBlockSizeAt(const int i, const int j) const;
-    bool GetIsObstacleAt(const int i, const int j) const;
+    Behaviour_e GetBlockTypeAt(const unsigned int i, const unsigned int j) const;
+    Abilities_e GetBlockAbilityAt(const unsigned int i, const unsigned int j) const;
+    int GetBlockSizeAt(const unsigned int i, const unsigned int j) const;
+    bool GetIsObstacleAt(const unsigned int i, const unsigned int j) const;
      
-    void SetPoppedBlock(const int row, const int col);
-    bool IsPoppedBlock(const int i, const int j) const;
+    void SetPoppedBlock(const unsigned int row, const unsigned int col);
+    bool IsPoppedBlock(const unsigned int i, const unsigned int j) const;
     
-    ObstacleBlock_s *GetBlockReference(const int i, const int j);
+    ObstacleBlock_s *GetBlockReference(const unsigned int i, const unsigned int j);
 };
 

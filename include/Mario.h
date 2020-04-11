@@ -1,8 +1,9 @@
 #pragma once
 
 #include <iostream>
-#include "Bonus.h"
-//#include "Player.h"
+#include "Item.h"
+#include "Block.h"
+#include <list>
 
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
@@ -28,7 +29,9 @@ private:
     
     Player *m_pPlayer;
     Obstacle *m_pObstacle;
-    Bonus *m_pBonus;
+    std::list<Item> m_pItem;
+    
+    Block m_Block;
     
     int m_FramePosition;
     int m_Score;

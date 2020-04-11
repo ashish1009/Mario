@@ -3,6 +3,9 @@
 #include "Obstacle.h"
 #include <math.h>
 
+const int blinkDelay = 7;                                       /// Divide by 8
+const int maxPopHeight = 8;                                     /// Maximum Height that block will move up when popped popped
+
 Block::Block()
 : m_TileVector(BLOCK_SIZE, BLOCK_SIZE), m_BlockIdxX(0) {
 }
@@ -14,46 +17,53 @@ Block::~Block() {
 /// Brief      : Load Block Image and sst all pixel as obstacle
 ///         m_WinMario get Updated
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-int Block::LoadBlockImage(sf::RenderWindow &winMario, Obstacle::ObstacleBlock_s *const blockObst) {
-    TileMap::PrintControl_s printControl;
+int Block::LoadBlockImage(sf::RenderWindow &winMario, const int frameX, Obstacle::ObstacleBlock_s *const blockObst) {
     Entity::Position_s blockPosition(blockObst->xPos, blockObst->yPos);
+    m_BlockIdxX = 0;                                                        /// Default Bonus/Brick Image
     
-    if (Obstacle::BONUS == blockObst->behaviour) {
-        if (blockObst->bIsEmpty) {
-            blockObst->behaviour = Obstacle::BRICK;                             /// as Empty Image is in Brick Row
-        } /// if (blockObst->bIsEmpty)
+    if (blockObst->bIsEmpty) {
+        blockObst->behaviour = Obstacle::BRICK;                             /// as Empty Image is in Brick Row
+        Obstacle *pObstacle = Obstacle::GetInstance();
+        if (!pObstacle) {
+            LogError(BIT_BONUS, "Bonus::LoadBlockImage(), Obstacle Istance is nULL \n");
+            return EXIT_FAILURE;
+        }
+        
+        /// Brivk Broken
+        if (Obstacle::NO_ABILITY == blockObst->abilities) {
+            const int blockRow = blockObst->yPos >> BLOCK_SIZE_BIT;
+            const int blockCol = (frameX >> BLOCK_SIZE_BIT) + (blockObst->xPos >> BLOCK_SIZE_BIT) + 1;
+            pObstacle->ResetBlockPixels(blockRow, blockCol);
+            return EXIT_SUCCESS;
+        }
         else {
-            if (blockObst->bIsPopped) {
-                const int maxPopHeight = 8;                                     /// Maximum Height that block will move up when popped popped
-                /// Pop the Block upto height  : 8
-                if (maxPopHeight >= blockObst->upPopped) {
-                    blockObst->upPopped++;
-                    blockPosition.SetPositionLocal(blockPosition.X, blockPosition.Y - blockObst->upPopped);
-                }
-                /// after poped it is set as empty block
-                else {
-                    blockObst->bIsEmpty = true;
-                    blockObst->upPopped = 0;
-                }
-            } /// if (block->bIsPopped && !block->bIsEmpty)
+            m_BlockIdxX = 2;                                                /// Image of EMPTY block
+        }
+    } /// if (blockObst->bIsEmpty)
+    else {
+        if (blockObst->bIsPopped) {
+            /// Pop the Block upto height  : 8
+            if (maxPopHeight >= blockObst->upPopped) {
+                blockObst->upPopped++;
+                blockPosition.SetPositionLocal(blockPosition.X, blockPosition.Y - blockObst->upPopped);
+            }
+            /// after poped it is set as empty block
             else {
+                blockObst->upPopped = 0;
+                blockObst->bIsEmpty = true;
+            }
+        } /// if (block->bIsPopped && !block->bIsEmpty)
+        else {
+            if (Obstacle::BONUS == blockObst->behaviour) {
                 /// Logic for Blinking Blocks
-                const int blinkDelay = 7;                                       /// Divide by 8
                 static short blinkCounter = 0;
                 m_BlockIdxX = (blinkCounter++) >> blinkDelay;
                 m_BlockIdxX %= 4;                                               /// there are 4 images to blink
             }
         }
-    } /// if (Obstacle::BONUS == block->behaviour)
-    else {
-        if (blockObst->bIsEmpty) {
-            m_BlockIdxX = 2;                                                    /// Image of EMPTY block
-        }
-        else {
-            m_BlockIdxX = 0;                                                    /// Default Bonus/Brick Image
-        }
     }
     
+    TileMap::PrintControl_s printControl;
     printControl.tileSet = ResourcePath + BLOCK_IMG_PATH;
     printControl.position = blockPosition;
     printControl.imgY = blockObst->behaviour << BLOCK_SIZE_BIT;

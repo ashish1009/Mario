@@ -58,7 +58,7 @@ Player *Player::ReleaseInstance() {
 int Player::LoadPlayerImage(sf::RenderWindow &winMario) {
     TileMap::PrintControl_s printControl;
     
-    if ((GROUND == m_State) && (RUNNING != m_PrevState)) {
+    if (((GROUND == m_State) && (RUNNING != m_PrevState)) || (PlayerImgIdx::MID_INC == m_PlayerImgIdx)) {
         m_PlayerImgIdx = PlayerImgIdx::STAND;
     }
     
@@ -234,8 +234,8 @@ bool Player::IsJumpCollision (const int frameX) {
     bool bIsLeftUpCollision = m_pObstacle->GetIsObstacleAt(m_Position.Y - m_PlayerHeight - 1, gPixelToBeUpColloidedL + m_Position.X + frameX);
     bool bIsRightUpCollision = m_pObstacle->GetIsObstacleAt(m_Position.Y - m_PlayerHeight - 1, gPixelToBeUpColloidedR + m_Position.X + frameX);
     
+    /// Set the block as popped so that it may behave according to blocs's behaviour e.g Coin, Mushroom or none
     if (bIsLeftUpCollision || bIsRightUpCollision) {
-        /// Set the block as popped so that it may behave according to blocs's behaviour e.g Coin, Mushroom or none
         m_pObstacle->SetPoppedBlock (m_Position.Y - m_PlayerHeight - 1, m_Position.X + frameX + (PLAYER_WIDTH >> 1));
         return true;
     }

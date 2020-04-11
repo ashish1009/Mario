@@ -1,4 +1,5 @@
 #include "Obstacle.h"
+#include "Logger.h"
 
 const short MAX_HOLLOW_BLOCK = 7;
 const short MAX_PIPE = 6;
@@ -39,7 +40,7 @@ const Obstacle::Behaviour_e gRow5Behaviour[MAX_BLOCKS] = {
 const Obstacle::Abilities_e gRow5Ability[MAX_BLOCKS] = {
     Obstacle::COIN,
     Obstacle::NO_ABILITY, Obstacle::NO_ABILITY, Obstacle::NO_ABILITY, Obstacle::NO_ABILITY, Obstacle::NO_ABILITY, Obstacle::NO_ABILITY, Obstacle::NO_ABILITY,
-    Obstacle::NO_ABILITY, Obstacle::MUSHROOM, Obstacle::NO_ABILITY, Obstacle::STAR_BONUS,
+    Obstacle::NO_ABILITY, Obstacle::MUSHROOM, Obstacle::NO_ABILITY, Obstacle::STAR,
     Obstacle::MUSHROOM,
     Obstacle::NO_ABILITY, Obstacle::NO_ABILITY, Obstacle::NO_ABILITY,
     Obstacle::NO_ABILITY, Obstacle::COIN, Obstacle::COIN, Obstacle::NO_ABILITY
@@ -84,10 +85,11 @@ const Obstacle::Abilities_e gRow9Ability[MAX_BLOCKS] = {
 const short gPipeRowIdx = 12;
 const short gBaseGroundRowIdx = gPipeRowIdx + 1;
 
-void Obstacle::GetBlock(const int row, const int col) {
+void Obstacle::SetBlock(const unsigned int row, const unsigned int col) {
     m_BlockType[row][col].size = BLOCK_SIZE;
     m_BlockType[row][col].behaviour = NO_BEHAV;
     m_BlockType[row][col].abilities = NO_ABILITY;
+    m_BlockType[row][col].yPos = (row << BLOCK_SIZE_BIT) + (BLOCK_SIZE >> 1); /// row * 16 + 8        : Shift 8  for last half ground block
 
     if ((gBaseGroundRowIdx == row || (gBaseGroundRowIdx + 1) == row)) {
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////                 Base Ground and Hollow
@@ -107,16 +109,11 @@ void Obstacle::GetBlock(const int row, const int col) {
         for (int i = 0; i < MAX_PIPE; i++) {
             if (gPipeColIdx[i] == col) {
                 for (int k = 0; k < gPipeSize[i]; k++) {
-                    if (k == gPipeSize[i] - 1) {
-                        m_BlockType[row - k][col].behaviour = PIPE;
-                        m_BlockType[row - k][col].size = gPipeSize[i] * BLOCK_SIZE;
-                        SetObstaclePixels(row - k, col);
-                    }
-                    else {
-                        m_BlockType[row - k][col].behaviour = PIPE_BASE;
-                        m_BlockType[row - k][col].size = gPipeSize[i] * BLOCK_SIZE;
-                        SetObstaclePixels(row - k, col);
-                    }
+                    m_BlockType[row - k][col].behaviour = (k == gPipeSize[i] - 1) ? PIPE : PIPE_BASE;
+                
+                    m_BlockType[row - k][col].size = gPipeSize[i] * BLOCK_SIZE;
+                    SetObstaclePixels(row - k, col);
+                    SetObstaclePixels(row - k, col + 1);
                 }
                 return;
             }
@@ -158,9 +155,9 @@ void Obstacle::GetBlock(const int row, const int col) {
 }
 
 void Obstacle::InitObstacles() {
-    for (int i = 0; i <= NUM_ROW; i++) {
+    for (int i = 0; i < NUM_ROW; i++) {
         for (int j = 0; j < NUM_COL; j++) {
-            GetBlock(i, j);
+            SetBlock(i, j);
         }
     }
 //    for (int j = 0; j < 20; j++) {
@@ -169,11 +166,39 @@ void Obstacle::InitObstacles() {
 //    }
 }
 
+
+void Obstacle::ResetBlockPixels(const unsigned int row, const unsigned int col) {
+    if ((row < NUM_ROW) && (col < NUM_COL)) {
+        m_BlockType[row][col].bIsEmpty = false;
+        m_BlockType[row][col].bIsObstacle = false;
+//        m_BlockType[row][col].bIsPopped = false;
+        m_BlockType[row][col].upPopped = 0;
+        m_BlockType[row][col].size = BLOCK_SIZE;
+        m_BlockType[row][col].behaviour = NO_BEHAV;
+        m_BlockType[row][col].abilities = NO_ABILITY;
+        
+        float tileSize = (BLOCK_SIZE == GetBlockSizeAt(row, col) ? BLOCK_SIZE : BLOCK_SIZE << 1); //  TODO;
+        float blockX = (col << BLOCK_SIZE_BIT);
+        float blockY = (row << BLOCK_SIZE_BIT) + (BLOCK_SIZE >> 1);  /// Shift for lasg half ground block
+        
+        for (int i = blockY - BLOCK_SIZE; i < blockY; i++) {
+            for (int j = blockX; j < blockX + tileSize; j++) {
+                if (0 <= i) {
+                    m_Obstacle[i][j].bIsObstacle = false;
+                }
+            }
+        }
+    }
+    else {
+        LogError (BIT_OBSTACLE, "Obstacle::ResetBlock(%d, %d) :  invalid row %d or col %d \n", NUM_ROW, NUM_COL, row, col);
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Brief      : Set Each Pixels of BLOCK as obstacle
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Obstacle::SetObstaclePixels(const int row, const int col) {
-    float tileSize = (BLOCK_SIZE == GetBlockSizeAt(row, col) ? BLOCK_SIZE : BLOCK_SIZE << 1); //  TODO;
+void Obstacle::SetObstaclePixels(const unsigned int row, const unsigned int col) {
+    float tileSize = (BLOCK_SIZE == GetBlockSizeAt(row, col) ? BLOCK_SIZE : BLOCK_SIZE * 2); //  TODO;
     float blockX = (col << BLOCK_SIZE_BIT);
     float blockY = (row << BLOCK_SIZE_BIT) + (BLOCK_SIZE >> 1);  /// Shift for lasg half ground block
     
@@ -186,6 +211,3 @@ void Obstacle::SetObstaclePixels(const int row, const int col) {
     }
 }
 
-void Obstacle::SetBlock (const int row, const int col) {
-    
-}

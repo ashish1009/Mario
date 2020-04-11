@@ -1,6 +1,5 @@
 #include "Mario.h"
 #include "Logger.h"
-#include "Block.h"
 #include <math.h>
 
 #define TEXT_SIZE 30
@@ -13,7 +12,7 @@ const int TIME_LIMIT = 400;
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Mario::Mario()
 : m_WinMario({WIN_WIDTH, WIN_HEIGHT}, "Super MArio"), m_WinSize(0, 0),
-m_pPlayer(nullptr), m_pObstacle(nullptr), m_pBonus(nullptr),
+m_pPlayer(nullptr), m_pObstacle(nullptr),// m_pBonus(nullptr),
 m_FramePosition(0), m_Score(0), m_CoinCount(0), m_Level(1), m_Time(0) {
     
     m_MarioTexture.loadFromFile(ResourcePath + "graphics/level1.png");
@@ -38,7 +37,6 @@ m_FramePosition(0), m_Score(0), m_CoinCount(0), m_Level(1), m_Time(0) {
 Mario::~Mario() {
     m_pPlayer = Player::ReleaseInstance();
     m_pObstacle = Obstacle::ReleaseInstance();
-    m_pBonus = Bonus::ReleaseInstance();
     
     LogInfo(BIT_MARIO, "Mario::~Mario(), Destructor called \n");
 }
@@ -97,14 +95,14 @@ void Mario::PlayGame() {
                     }
                     break;
                                         
-                case sf::Event::MouseMoved:
-                    m_Score = (m_MarioEvent.mouseMove.x * WORLD_VIEW_WIDTH) / m_WinSize.x;
-                    m_CoinCount = (m_MarioEvent.mouseMove.y * WORLD_VIEW_HEIGHT) / m_WinSize.y;
-
-                    m_Level = m_pObstacle->GetIsObstacleAt(m_CoinCount, m_Score + m_FramePosition);
-                    m_Time = m_pPlayer->GetState();
-                    m_Time = m_pPlayer->GetSpeed();
-                    break;
+//                case sf::Event::MouseMoved:
+//                    m_Score = (m_MarioEvent.mouseMove.x * WORLD_VIEW_WIDTH) / m_WinSize.x;
+//                    m_CoinCount = (m_MarioEvent.mouseMove.y * WORLD_VIEW_HEIGHT) / m_WinSize.y;
+//
+//                    m_Level = m_pObstacle->GetIsObstacleAt(m_CoinCount, m_Score + m_FramePosition);
+//                    m_Time = m_pPlayer->GetState();
+//                    m_Time = m_pPlayer->GetSpeed();
+//                    break;
                     
                 default:
                     break;
@@ -128,16 +126,22 @@ void Mario::DrawView() {
     m_pPlayer->CheckPlayerState(m_FramePosition, m_WinMario);
     DrawBlocks();
     
-    if (m_pBonus) {
-        if (EXIT_FAILURE == m_pBonus->LoadBlockImage(m_WinMario, m_FramePosition, m_pBonus->getBlock())) {
-            LogError(BIT_MARIO, "Mario::DrawView(), Can not load Bonus image \n");
-            m_WinMario.close();
-        }
-        
-        if (Entity::DYING == m_pBonus->GetState()) {    /// if Bonus Gift is no more present in game then release the instance
-            m_pBonus = Bonus::ReleaseInstance();
-//            m_CoinCount++;
-//            m_Score+=100;
+    if (!m_pItem.empty()) {
+        auto it = m_pItem.begin();
+        for (; it != m_pItem.end(); it++) {
+            if (EXIT_FAILURE == it->LoadItemImage(m_WinMario, m_FramePosition)) {
+                LogError (BIT_MARIO, "Mario::DrawView(), Can not load Bonus Image \n");
+                m_WinMario.close();
+            }
+            if(Entity::DYING == it->GetState()) {
+                if (Obstacle::COIN == it->getBlock()->abilities) {
+                    m_Score += 100;
+                    m_CoinCount++;
+                }
+                m_pItem.erase(it);
+                LogDebug (BIT_MARIO, "Mario::DrawView(), New Size of Items : %d\n", m_pItem.size());
+                break;
+            }
         }
     }
 }
@@ -147,30 +151,31 @@ void Mario::DrawView() {
 ///         m_WinMario get Updated
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Mario::DrawBlocks() {
-    const int xOffset = m_FramePosition >> BLOCK_SIZE_BIT;          /// to divide by Block SIze = 16
-    
+    const int xOffset = m_FramePosition >> BLOCK_SIZE_BIT;          /// x Offset in terms of Blocks
     for (int i = 0; i < gNumRowToDraw; i++) {
         for (int j = 0; j <= gNumColView; j++) {
             Obstacle::ObstacleBlock_s *blockObst = m_pObstacle->GetBlockReference(gRowBlockArr[i], j + xOffset);
-            
             if (Obstacle::NO_BEHAV != blockObst->behaviour) {
-                blockObst->xPos = ((j + xOffset) << BLOCK_SIZE_BIT) - m_FramePosition;     /// col  * 16 - Frame : As Frame moves left then we need to check block with that offset rather than 0
-                blockObst->yPos = (gRowBlockArr[i] << BLOCK_SIZE_BIT) + (BLOCK_SIZE >> 1); /// row * 16 + 8           : Shift 8  for last half ground block
-                
-                Block block;
-                if (EXIT_FAILURE == block.LoadBlockImage(m_WinMario, blockObst)) {
+                /// xOffset + col in pixels + frame(if we move further so we want our block to move as well) in  pixels
+                blockObst->xPos = ((j + xOffset) << BLOCK_SIZE_BIT) - m_FramePosition;
+                if (EXIT_FAILURE == m_Block.LoadBlockImage(m_WinMario, m_FramePosition, blockObst)) {
                     m_WinMario.close();
                 }
                 
                 if (blockObst->bIsPopped && !blockObst->bIsEmpty && blockObst->upPopped == 1) {
                     /// If Block is popped and it is not empty it will create the Bonus object for coin of Mushroom ( blockObst->upPopped == 1 :  to create it just once as other two eill true for 8 times)
-                    m_pBonus = Bonus::CreateInstance();
-                    if (m_pBonus) {
-                        m_pBonus->SetFramePos(m_FramePosition);                                 /// Store the current frame position, fo future use in loadBlockImage
-                        m_pBonus->SetXPos(blockObst->xPos);                                     /// Store the current X position, fo future use in loadBlockImage
-                        m_pBonus->SetBlock(blockObst);                                          /// Store the block type
-                        m_pBonus->SetPosition(blockObst->xPos, blockObst->yPos - BLOCK_SIZE);   /// Store the Initial position of Gift as 1 size up than block
-                    } /// if (m_pBonus)
+                    Item item;
+                    item.SetFramePos(m_FramePosition);                                 /// Store the current frame position, fo future use in loadBlockImage
+                    item.SetXPos(blockObst->xPos);                                     /// Store the current X position, fo future use in loadBlockImage
+                    item.SetBlock(blockObst);                                          /// Store the block type
+                    item.SetPosition(blockObst->xPos, blockObst->yPos - BLOCK_SIZE);   /// Store the Initial position of Gift as 1 size up than block
+
+                    int numItem = ((Obstacle::NO_ABILITY == blockObst->abilities) ? 4 : 1);
+                    for (int i = 0; i < numItem; i++) {
+                        item.SetItemBreakPart(((i & 2) >> 1), (i & 1));
+                        m_pItem.push_back(item);
+                    }
+                    LogDebug(BIT_MARIO, "Mario::DrawBlocks(), Size of Items : %d\n", m_pItem.size());
                 } /// if (blockObst->bIsPopped && !blockObst->bIsEmpty && blockObst->upPopped == 1)
             } /// if (Obstacle::NO_BEHAV != blockObst->behaviour)
         } /// for (int j = 0; j <= gNumColView; j++)

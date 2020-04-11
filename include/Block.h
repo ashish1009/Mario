@@ -18,5 +18,5 @@ public:
     Block();
     ~Block();
     
-    int LoadBlockImage(sf::RenderWindow &m_WinMario, Obstacle::ObstacleBlock_s *const block);
+    int LoadBlockImage(sf::RenderWindow &m_WinMario, const int frameX, Obstacle::ObstacleBlock_s *const block);
 };
