@@ -1,18 +1,13 @@
 #pragma once
 
-#include <iostream>
-#include "Item.h"
+#include "Player.h"
 #include "Block.h"
-#include <list>
-
-#include <SFML/Graphics.hpp>
-#include <SFML/Audio.hpp>
-#include <SFML/Window.hpp>
+#include "Item.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Mario Class
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class Mario {
+class Mario : private SoundBuffer{
 private:
     sf::RenderWindow m_WinMario;
     sf::Vector2u m_WinSize;
@@ -23,13 +18,22 @@ private:
     sf::Font m_Font;
     sf::Text m_Text;
     sf::Clock m_Clock;
+    sf::Music m_Music;
+    
+//    sf::SoundBuffer m_JumpSound;
+//    sf::SoundBuffer m_FireSound;
+//    sf::SoundBuffer m_GameOverSound;
+//    sf::SoundBuffer m_BrickSmashSound;
+//    sf::SoundBuffer m_CoinSound;
     
     sf::Texture m_CoinScoreTexture;
     sf::Sprite m_CoinScoreSprite;
     
     Player *m_pPlayer;
     Obstacle *m_pObstacle;
-    std::list<Item> m_pItem;
+    
+    std::list<Item> m_lItem;
+    std::list<Bullet> m_lFire;
     
     Block m_Block;
     

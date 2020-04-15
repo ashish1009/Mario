@@ -1,10 +1,8 @@
 #pragma once
 
-#include <iostream>
-#include "Obstacle.h"
-#include "Player.h"
+#include "TileMap.h"
 
-class Item : public Entity{
+class Item : public Entity, private SoundBuffer{
 private:
     sf::Vector2f m_TileVector;
     
@@ -16,6 +14,8 @@ private:
     Obstacle::ObstacleBlock_s *m_pBlock;
     sf::Vector2<short> m_ItemBreakPart;
     short m_ItemMovePathIdx;
+    
+    sf::Clock clock;
     
 public:
     Item();

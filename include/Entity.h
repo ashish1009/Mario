@@ -1,6 +1,5 @@
 #pragma once
 
-#include <iostream>
 #include "Common.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -46,11 +45,11 @@ public:
     /// Enum to define Abiloty of Entity
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     enum Ability_e : short {
-        P1_REGULAR = 0, // No Special Ability for Player 1
-        P2_REGULAR = 1, // No Special Ability for Player 2
-        FIRABLE = 2,    // Entity can Fire
-        INVISIBLE = 3,   // Entity can never be Dead
-        INCREASING = 4,
+        P1_REGULAR = 0,     // No Special Ability for Player 1
+        P2_REGULAR = 1,     // No Special Ability for Player 2
+        FIRABLE = 2,        // Entity can Fire
+        INVISIBLE = 3,      // Entity can never be Dead
+        CHANGING_STATE = 4, 
     };
     
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -62,6 +61,7 @@ public:
         GROUND = 2,     // When Entity is Landed at some place
         DYING = 3,      // When Entity is Dying
         RUNNING = 4,    // When Entity is Running
+        SHOOTING = 5,
     };
     
     typedef short Speed;

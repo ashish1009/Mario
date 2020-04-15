@@ -1,10 +1,6 @@
 #pragma once
 #include "Entity.h"
 
-#include <SFML/Graphics.hpp>
-#include <SFML/Audio.hpp>
-#include <SFML/Window.hpp>
-
 class TileMap : public sf::Drawable, public sf::Transformable {
 public:
     struct PrintControl_s {

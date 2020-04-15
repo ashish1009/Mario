@@ -1,11 +1,8 @@
 #pragma once
 
-#include <iostream>
 #include "TileMap.h"
-#include "Common.h"
-#include <vector>
 
-class Block
+class Block : private SoundBuffer
 {
 private:
     TileMap m_Tile;
@@ -18,5 +15,5 @@ public:
     Block();
     ~Block();
     
-    int LoadBlockImage(sf::RenderWindow &m_WinMario, const int frameX, Obstacle::ObstacleBlock_s *const block);
+    int LoadBlockImage(sf::RenderWindow &m_WinMario, const int frameX, Obstacle::ObstacleBlock_s *const block, Entity::Size_e playerSize);
 };

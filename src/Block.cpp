@@ -17,7 +17,7 @@ Block::~Block() {
 /// Brief      : Load Block Image and sst all pixel as obstacle
 ///         m_WinMario get Updated
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-int Block::LoadBlockImage(sf::RenderWindow &winMario, const int frameX, Obstacle::ObstacleBlock_s *const blockObst) {
+int Block::LoadBlockImage(sf::RenderWindow &winMario, const int frameX, Obstacle::ObstacleBlock_s *const blockObst, Entity::Size_e playerSize) {
     Entity::Position_s blockPosition(blockObst->xPos, blockObst->yPos);
     m_BlockIdxX = 0;                                                        /// Default Bonus/Brick Image
     
@@ -43,14 +43,33 @@ int Block::LoadBlockImage(sf::RenderWindow &winMario, const int frameX, Obstacle
     else {
         if (blockObst->bIsPopped) {
             /// Pop the Block upto height  : 8
-            if (maxPopHeight >= blockObst->upPopped) {
-                blockObst->upPopped++;
+            if (maxPopHeight >= blockObst->upPopped++) {
+                if(1 == blockObst->upPopped) {
+                    if (Obstacle::COIN == blockObst->abilities) {
+                        m_Sound.setBuffer(m_CoinSound);
+                        m_Sound.play();
+                    }
+                    else if ((Obstacle::NO_ABILITY == blockObst->abilities) && (Entity::BIG == playerSize)){
+                        m_Sound.setBuffer(m_BrickSmashSound);
+                        m_Sound.play();
+                    }
+                    else if (Obstacle::MUSHROOM == blockObst->abilities) {
+                        m_Sound.setBuffer(m_PowerUpSound);
+                        m_Sound.play();
+                    }
+                }
                 blockPosition.SetPositionLocal(blockPosition.X, blockPosition.Y - blockObst->upPopped);
             }
             /// after poped it is set as empty block
             else {
                 blockObst->upPopped = 0;
-                blockObst->bIsEmpty = true;
+                const Obstacle::Behaviour_e &blockbehav = blockObst->behaviour;
+                if ((Obstacle::BONUS == blockbehav) || (Obstacle::BRICK == blockbehav && Entity::BIG == playerSize)) {
+                    blockObst->bIsEmpty = true;
+                }
+                else {
+                    blockObst->bIsPopped = false;
+                }
             }
         } /// if (block->bIsPopped && !block->bIsEmpty)
         else {

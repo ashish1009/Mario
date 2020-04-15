@@ -39,8 +39,8 @@ const Obstacle::Behaviour_e gRow5Behaviour[MAX_BLOCKS] = {
 
 const Obstacle::Abilities_e gRow5Ability[MAX_BLOCKS] = {
     Obstacle::COIN,
-    Obstacle::NO_ABILITY, Obstacle::NO_ABILITY, Obstacle::NO_ABILITY, Obstacle::NO_ABILITY, Obstacle::NO_ABILITY, Obstacle::NO_ABILITY, Obstacle::NO_ABILITY,
-    Obstacle::NO_ABILITY, Obstacle::MUSHROOM, Obstacle::NO_ABILITY, Obstacle::STAR,
+    Obstacle::NO_ABILITY, Obstacle::NO_ABILITY, Obstacle::NO_ABILITY, Obstacle::NO_ABILITY, Obstacle::NO_ABILITY, Obstacle::NO_ABILITY, Obstacle::NO_ABILITY, Obstacle::NO_ABILITY,
+    Obstacle::NO_ABILITY, Obstacle::NO_ABILITY, Obstacle::NO_ABILITY, Obstacle::STAR,
     Obstacle::MUSHROOM,
     Obstacle::NO_ABILITY, Obstacle::NO_ABILITY, Obstacle::NO_ABILITY,
     Obstacle::NO_ABILITY, Obstacle::COIN, Obstacle::COIN, Obstacle::NO_ABILITY
@@ -72,7 +72,7 @@ const Obstacle::Behaviour_e gRow9Behaviour[MAX_BLOCKS] = {
 
 const Obstacle::Abilities_e gRow9Ability[MAX_BLOCKS] = {
     Obstacle::COIN,
-    Obstacle::NO_ABILITY, Obstacle::COIN, Obstacle::NO_ABILITY, Obstacle::MUSHROOM,
+    Obstacle::NO_ABILITY, Obstacle::MUSHROOM, Obstacle::NO_ABILITY, Obstacle::MUSHROOM,
     Obstacle::NO_ABILITY, Obstacle::MUSHROOM, Obstacle::NO_ABILITY,
     Obstacle::NO_ABILITY,
     Obstacle::NO_ABILITY, Obstacle::NO_ABILITY,

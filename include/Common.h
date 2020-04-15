@@ -1,5 +1,9 @@
 #pragma once
+#include <iostream>
 #include "Obstacle.h"
+#include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
+#include <SFML/Window.hpp>
 
 /// Path for Images used in Game
 const std::string ResourcePath = "/Users/ashish./Documents/XCode/Mario/Mario/Resources/";
@@ -20,3 +24,25 @@ const short BLOCK_SIZE_BIT = 4;
 
 /// Num of Col in terms of Blocks
 const int gNumColView = WORLD_VIEW_WIDTH >> BLOCK_SIZE_BIT;     /// to divide by Block SIze = 16
+
+class SoundBuffer {
+protected:
+    sf::Sound m_Sound;
+    
+    sf::SoundBuffer m_JumpSound;
+    sf::SoundBuffer m_BrickSmashSound;
+    sf::SoundBuffer m_BumpSound;
+    sf::SoundBuffer m_CoinSound;
+    sf::SoundBuffer m_CountDownSound;
+    sf::SoundBuffer m_FireSound;
+    sf::SoundBuffer m_KickSound;
+    sf::SoundBuffer m_OneUpSound;
+    sf::SoundBuffer m_PowerUpAppearSound;
+    sf::SoundBuffer m_PowerUpSound;
+    sf::SoundBuffer m_StompSound;
+    sf::SoundBuffer m_GameOverSound;    
+
+public:
+    SoundBuffer();
+    ~SoundBuffer();
+};

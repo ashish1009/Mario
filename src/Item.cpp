@@ -1,5 +1,6 @@
 #include "Item.h"
 #include "Logger.h"
+#include "Player.h"
 
 const int gMaxBrickPath = 42;
 const int gBrokeBrickPath1 [gMaxBrickPath][2] = {
@@ -67,7 +68,13 @@ int Item::LoadItemImage(sf::RenderWindow &winMario, short frameX) {
     } /// if (Obstacle::NO_ABILITY == m_pBlock->abilities)
     else if (Obstacle::COIN == m_pBlock->abilities) {
         /// Jump coint to 64 Pixels if popped then delete the coin bonus
-        (m_IdxY++ < 64) ? SetPosition(m_IdxX - (frameX- m_FramePos), m_Position.Y - 1) : SetState(State_e::DYING);
+        if (m_IdxY++ < 64) {
+//            if (m_IdxX < 64)
+            SetPosition(m_IdxX - (frameX- m_FramePos), m_Position.Y - 1);
+        }
+        else {
+            SetState(State_e::DYING);
+        }
         printControl.imgY = ((m_IdxY % 2) + Obstacle::COIN) << BLOCK_SIZE_BIT;
     }
     else if (Obstacle::MUSHROOM == m_pBlock->abilities) {
@@ -148,6 +155,15 @@ bool Item::IsPlayerCollision() {
             }
         }
     }
+    else if (pPlayer->GetPosition().Y == m_Position.Y) {
+        for (int i = 0; i < BLOCK_SIZE; i++) {
+            const int playerPixelX = pPlayer->GetPosition().X + i;
+            if ((playerPixelX == m_Position.X) || (playerPixelX == m_Position.X + BLOCK_SIZE - 1)) {
+                bResult = true;
+                break;
+            }
+        }
+    }
     if (bResult) {
         if (m_pBlock->abilities == Obstacle::MUSHROOM) {
             (SMALL == pPlayer->GetSize()) ? pPlayer->IncreaseSize() : pPlayer->SetAbility(FIRABLE);
@@ -158,8 +174,8 @@ bool Item::IsPlayerCollision() {
 
 bool Item::IsDownCollision (const int frameX) {
     Obstacle *pObstacle = Obstacle::GetInstance();
-    bool bIsLeftDownCollision = pObstacle->GetIsObstacleAt (m_Position.Y + 1, gPixelToBeLandedL + m_Position.X + frameX);
-    bool bIsRightDownCollision = pObstacle->GetIsObstacleAt (m_Position.Y + 1, gPixelToBeLandedR + m_Position.X + frameX);
+    bool bIsLeftDownCollision = pObstacle->GetIsObstacleAt (m_Position.Y, gPixelToBeLandedL + m_Position.X + frameX);
+    bool bIsRightDownCollision = pObstacle->GetIsObstacleAt (m_Position.Y, gPixelToBeLandedR + m_Position.X + frameX);
                             
     return (bIsLeftDownCollision || bIsRightDownCollision);
 }

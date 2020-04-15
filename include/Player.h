@@ -1,7 +1,7 @@
 #pragma once
 
-#include <iostream>
-#include "Fire.h"
+#include "Bullet.h"
+#include <list>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Player Image Index
@@ -18,7 +18,7 @@ static const short MID_INC = 15;
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Player Class
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class Player : public Entity {
+class Player : public Entity, private SoundBuffer {
 public:
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// Player Image Size in Pixel
@@ -42,6 +42,8 @@ private:
     short m_PlayerImgIdx;
     short m_PlayerMoveIdx;
     short m_JumpFactor;
+    
+    bool m_bShotFire;
 
 private:
     Player();
@@ -57,7 +59,7 @@ public:
     void Move(Entity::Direction_e direction, int &frameX, sf::RenderWindow &winMario);\
     void IncreaseSize();
     void IncJumFactor();
-    void Fire();
+    void FireBullet(std::list<Bullet> &fireList);
 
     inline void SetImgIdx(const short playerImgIdx) {
         m_PlayerImgIdx = playerImgIdx;
@@ -73,6 +75,10 @@ public:
     
     inline int GetPlayerHeight() const {
         return m_PlayerHeight;
+    }
+    
+    inline void SetShootingDone () {
+        m_bShotFire = true;
     }
     
     /// Pure virtual funxtion

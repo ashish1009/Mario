@@ -1,11 +1,11 @@
 #pragma once
 
-#include <iostream>
 #include <vector>
 #include "Entity.h"
 
 const short NUM_COL = 212;
 const short NUM_ROW = 15;
+
 const short BLOCK_SIZE = 16;
 
 const short gPixelToBeLandedL = 3;

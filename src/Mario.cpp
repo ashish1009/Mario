@@ -25,6 +25,8 @@ m_FramePosition(0), m_Score(0), m_CoinCount(0), m_Level(1), m_Time(0) {
     m_Text.setFont(m_Font);
     m_Text.setCharacterSize(TEXT_SIZE);
     
+    m_Music.openFromFile(ResourcePath + "music/main_theme.ogg");
+    
     m_pPlayer = Player::GetInstance();
     m_pObstacle = Obstacle::GetInstance();
      
@@ -57,12 +59,12 @@ void Mario::PlayGame() {
         m_WinMario.clear();
         m_MarioView.reset(sf::FloatRect(0.f, 0.f, WORLD_VIEW_WIDTH, WORLD_VIEW_HEIGHT));
     };
-    
-    m_FramePosition = 250; /// For Debug
+    m_Music.play();
+    m_FramePosition = 280;
     while (m_WinMario.isOpen()) {
         ResetScreen();
         SetTime();
-        
+            
         while (m_WinMario.pollEvent(m_MarioEvent)) {
             switch (m_MarioEvent.type) {
                 case sf::Event::Closed:
@@ -72,6 +74,8 @@ void Mario::PlayGame() {
                 
                 case sf::Event::KeyPressed:
                     if ((m_MarioEvent.key.code == sf::Keyboard::LShift) &&( Entity::AIR != m_pPlayer->GetState())) {
+                        m_Sound.setBuffer(m_JumpSound);
+                        m_Sound.play();
                         m_pPlayer->SetState(Entity::JUMPING);
                     }
                     {
@@ -82,8 +86,9 @@ void Mario::PlayGame() {
                             m_pPlayer->Move(Entity::LEFT, m_FramePosition, m_WinMario);
                         }
                     }
-                    if (m_MarioEvent.key.code == sf::Keyboard::Z) {
-                        m_pPlayer->Fire();
+                    if (m_MarioEvent.key.code == sf::Keyboard::LControl) {
+                        m_pPlayer->FireBullet(m_lFire);
+                        m_pPlayer->SetState(Entity::SHOOTING);
                     }
                     break;
                     
@@ -93,17 +98,12 @@ void Mario::PlayGame() {
                         m_pPlayer->ResetMoveImgIdx();
                         m_pPlayer->ResetSpeed();
                     }
+                    else if (m_MarioEvent.key.code == sf::Keyboard::LControl) {
+                        m_pPlayer->SetShootingDone();
+                        m_pPlayer->SetImgIdx(PlayerImgIdx::STAND);
+                    }
                     break;
-                                        
-//                case sf::Event::MouseMoved:
-//                    m_Score = (m_MarioEvent.mouseMove.x * WORLD_VIEW_WIDTH) / m_WinSize.x;
-//                    m_CoinCount = (m_MarioEvent.mouseMove.y * WORLD_VIEW_HEIGHT) / m_WinSize.y;
-//
-//                    m_Level = m_pObstacle->GetIsObstacleAt(m_CoinCount, m_Score + m_FramePosition);
-//                    m_Time = m_pPlayer->GetState();
-//                    m_Time = m_pPlayer->GetSpeed();
-//                    break;
-                    
+
                 default:
                     break;
             } /// switch (m_MarioEvent.type)
@@ -126,9 +126,10 @@ void Mario::DrawView() {
     m_pPlayer->CheckPlayerState(m_FramePosition, m_WinMario);
     DrawBlocks();
     
-    if (!m_pItem.empty()) {
-        auto it = m_pItem.begin();
-        for (; it != m_pItem.end(); it++) {
+    /// Draw Items
+    if (!m_lItem.empty()) {
+        auto it = m_lItem.begin();
+        for (; it != m_lItem.end(); it++) {
             if (EXIT_FAILURE == it->LoadItemImage(m_WinMario, m_FramePosition)) {
                 LogError (BIT_MARIO, "Mario::DrawView(), Can not load Bonus Image \n");
                 m_WinMario.close();
@@ -138,8 +139,29 @@ void Mario::DrawView() {
                     m_Score += 100;
                     m_CoinCount++;
                 }
-                m_pItem.erase(it);
-                LogDebug (BIT_MARIO, "Mario::DrawView(), New Size of Items : %d\n", m_pItem.size());
+                else if (Obstacle::MUSHROOM == it->getBlock()->abilities) {
+                    m_Score += 1000;
+                    m_Sound.setBuffer(m_PowerUpAppearSound);
+                    m_Sound.play();
+                }
+                m_lItem.erase(it);
+                LogDebug (BIT_MARIO, "Mario::DrawView(), New Size of Items : %d\n", m_lItem.size());
+                break;
+            }
+        }
+    }
+    
+    /// Draw Bullets
+    if (!m_lFire.empty()) {
+        auto it = m_lFire.begin();
+        for (; it != m_lFire.end(); it++) {
+            if (EXIT_FAILURE == it->LoadItemImage(m_WinMario, m_FramePosition)) {
+                LogError (BIT_MARIO, "Mario::DrawView(), Can not load Bonus Image \n");
+                m_WinMario.close();
+            }
+            if(Entity::DYING == it->GetState()) {
+                m_lFire.erase(it);
+                LogDebug (BIT_MARIO, "Mario::DrawView(), New Size of Bullets : %d\n", m_lFire.size());
                 break;
             }
         }
@@ -158,7 +180,7 @@ void Mario::DrawBlocks() {
             if (Obstacle::NO_BEHAV != blockObst->behaviour) {
                 /// xOffset + col in pixels + frame(if we move further so we want our block to move as well) in  pixels
                 blockObst->xPos = ((j + xOffset) << BLOCK_SIZE_BIT) - m_FramePosition;
-                if (EXIT_FAILURE == m_Block.LoadBlockImage(m_WinMario, m_FramePosition, blockObst)) {
+                if (EXIT_FAILURE == m_Block.LoadBlockImage(m_WinMario, m_FramePosition, blockObst, m_pPlayer->GetSize())) {
                     m_WinMario.close();
                 }
                 
@@ -170,12 +192,15 @@ void Mario::DrawBlocks() {
                     item.SetBlock(blockObst);                                          /// Store the block type
                     item.SetPosition(blockObst->xPos, blockObst->yPos - BLOCK_SIZE);   /// Store the Initial position of Gift as 1 size up than block
 
-                    int numItem = ((Obstacle::NO_ABILITY == blockObst->abilities) ? 4 : 1);
+                    int numItem = 1;
+                    if (Obstacle::NO_ABILITY == blockObst->abilities) {
+                        numItem = ((m_pPlayer->GetSize()) ? 4 : 0);
+                    }
                     for (int i = 0; i < numItem; i++) {
                         item.SetItemBreakPart(((i & 2) >> 1), (i & 1));
-                        m_pItem.push_back(item);
+                        m_lItem.push_back(item);
                     }
-                    LogDebug(BIT_MARIO, "Mario::DrawBlocks(), Size of Items : %d\n", m_pItem.size());
+                    LogDebug(BIT_MARIO, "Mario::DrawBlocks(), Size of Items : %d\n", m_lItem.size());
                 } /// if (blockObst->bIsPopped && !blockObst->bIsEmpty && blockObst->upPopped == 1)
             } /// if (Obstacle::NO_BEHAV != blockObst->behaviour)
         } /// for (int j = 0; j <= gNumColView; j++)

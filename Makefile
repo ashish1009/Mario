@@ -27,8 +27,10 @@ SRC += $(MARIO_SRC)/TileMap.cpp
 SRC += $(MARIO_SRC)/Obstacle.cpp
 SRC += $(MARIO_SRC)/Block.cpp
 SRC += $(MARIO_SRC)/InitObstacle.cpp
-SRC += $(MARIO_SRC)/Bonus.cpp
-SRC += $(MARIO_SRC)/Fire.cpp
+SRC += $(MARIO_SRC)/Item.cpp
+SRC += $(MARIO_SRC)/Bullet.cpp
+SRC += $(MARIO_SRC)/SoundBufferConst.cpp
+SRC += $(MARIO_SRC)/Enemy.cpp
 
 SRC += $(LOGGER_SRC)/Logger.cpp
 

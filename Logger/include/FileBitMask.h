@@ -18,5 +18,10 @@ enum FileBitMask_e
     BIT_LIST = 7,
 
     /// third Nibble 
-//    BIT_ = 
+    BIT_BONUS = 8,
+    BIT_ITEM = 9,
+    BIT_BULLET = 10,
+    BIT_ENEMY = 11,
+    
+    /// forth Nibble
 };
