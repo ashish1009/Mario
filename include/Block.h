@@ -1,19 +1,56 @@
 #pragma once
-
 #include "TileMap.h"
 
-class Block : private SoundBuffer
-{
-private:
-    TileMap m_Tile;
-    sf::View m_BlockView;
-    sf::Vector2f m_TileVector;
-    
-    short m_BlockIdxX;
+const short NUM_COL = 212;
+const short NUM_ROW = 16;
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Enum to Type of Obstacle Block :  value is according to Y index of that image
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+enum BlockType_e : short {
+    NO_TYPE = -1,
+    MUSHROOM = 0,
+    FIRE_LEAF = 2,
+    STAR = 4,
+    BONUS = 5,
+    COIN = 6,
+    BRICKS = 12,
+    BLOCK = 13,
+    PIPE = 18,
+    PIPE_BASE = 19,
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Enum to store the ability of block
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+enum Ability_e : short {
+    EMPTY = -1,
+    NONE = 0,
+    COIN_BONUS = 1,
+    MUSHROOM_BONUS = 2,
+    STAR_BONUS = 3,
+    BREAKABLE = 4
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Block Class
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class Block {
+public:
+    static unsigned short m_NumInstance;
+    
+    bool m_bIsPopped;
+    bool m_bIsEmpty;
+    
+    short m_UpPopped;
+    short m_RowNum;
+    short m_ColNum;
+    
+    Position_s m_Position;
+    BlockType_e m_BlockType;
+    Ability_e m_Abilty;
+    
 public:
     Block();
     ~Block();
-    
-    int LoadBlockImage(sf::RenderWindow &m_WinMario, const int frameX, Obstacle::ObstacleBlock_s *const block, Entity::Size_e playerSize);
 };

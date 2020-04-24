@@ -1,165 +1,181 @@
 #include "Obstacle.h"
 #include "Logger.h"
 
-Obstacle *Obstacle::m_pInstance = nullptr;
+Obstacle *Obstacle::m_Instance = nullptr;
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/// Brief       : Obstacle Constructor
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+const int gBlinkDelay = 10;
+const int gMaxPopHeight = 16;   /// Maximum Height that block will move up when popped popped
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Brief : Constructor
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Obstacle::Obstacle() {
-    for (int i = 0; i < NUM_ROW * BLOCK_SIZE; i++) {
-        std::vector<ObstaclePixel_s> colPixels;
-        ObstaclePixel_s obstacle;
-        
-        for (int j = 0; j < NUM_COL * BLOCK_SIZE; j++) {
-            obstacle.SetObstacle(false, NO_BEHAV, NO_ABILITY);
-            colPixels.push_back(obstacle);
+    for (auto &row : m_Obstacle) {
+        row.fill(false);
+    }
+    InitObstacle();
+    LogInfo(BIT_OBSTACLE, "Obstacle::Obstacle(), Constructor called !!! \n");
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Breif : Destructor
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+Obstacle::~Obstacle() {
+    LogInfo(BIT_OBSTACLE, "Obstacle::~Obstacle(), Destructor called !!! \n");
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Breif : Create a new instance if not created already and return
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+Obstacle *Obstacle::GetInstance() {
+    if (!m_Instance) {
+        m_Instance = new Obstacle;
+        LogInfo(BIT_OBSTACLE, "Obstacle::GetInstance(), Creating Obstacle Instance \n");
+    }
+    return m_Instance;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Breif : Delete instance if not deleted
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+Obstacle *Obstacle::ReleaseInstance() {
+    if (m_Instance) {
+        delete m_Instance;
+        m_Instance = nullptr;
+        LogInfo(BIT_OBSTACLE, "Obstacle::ReleaseInstance(), Deleting Obstacle Instance \n");
+    }
+    return m_Instance;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Breif : Set all pixel of that block to true AS obstacle
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Obstacle::SetBlockPixels(const Block &block) {
+    for (int row = block.m_Position.Y; row > block.m_Position.Y - BLOCK_SIZE; row--) {
+        for (int col = block.m_Position.X; col < block.m_Position.X + BLOCK_SIZE; col++) {
+            m_Obstacle[row][col] = true;
         }
-        m_Obstacle.push_back(colPixels);
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Breif : ReSet all pixel of that block to true AS obstacle
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Obstacle::ResetBlockPixel(Block &block) {
+    block.m_BlockType = NO_TYPE;
+//    block.m_Abilty = EMPTY;
+//    block.m_bIsEmpty = false;
+    
+    for (int row = block.m_Position.Y; row > block.m_Position.Y - BLOCK_SIZE; row--) {
+        for (int col = block.m_Position.X; col < block.m_Position.X + BLOCK_SIZE; col++) {
+            m_Obstacle[row][col] = false;
+        }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Breif : Mark the block as empty
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Obstacle::EmptyBlock(Block &block, short &imgIdxX) {
+    /// Brick Broken
+    if (BREAKABLE == block.m_Abilty) {
+        ResetBlockPixel(block);
+    }
+    else {
+        block.m_BlockType = BRICKS; /// as Empty Image is in Brick Row
+        imgIdxX = 3;    /// Image of EMPTY block
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Breif : pop up the block upon collsion
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Obstacle::PopBlock(Block &block) {
+    /// shift the block to height 8 once popped
+    if (gMaxPopHeight > block.m_UpPopped++) {
+        block.m_Position.Y--;
+    }
+    else {
+        /// play the sound once
+        if (COIN_BONUS == block.m_Abilty) {
+            m_Sound.setBuffer(m_CoinSound);
+        }
+        else if ((BREAKABLE == block.m_Abilty)) {
+            m_Sound.setBuffer(m_BrickSmashSound);
+        }
+        else if (MUSHROOM_BONUS == block.m_Abilty) {
+            m_Sound.setBuffer(m_PowerUpAppearSound);
+        }
+        else if (NONE == block.m_Abilty) {
+            m_Sound.setBuffer(m_BumpSound);
+        }
+        m_Sound.play();
+
+        block.m_Position.Y += gMaxPopHeight;
+        block.m_UpPopped = 0;
+        
+        if ((NONE != block.m_Abilty)) {
+            block.m_bIsEmpty = true;
+        }
+        else {
+            block.m_bIsPopped = false;
+        }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Breif : Blink the block
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Obstacle::BlinkBlock(Block &block, short &imgIdxX) {
+    if (BONUS == block.m_BlockType) {
+        /// blicking of bonus
+        static unsigned short blinkCounter = 0;
+        imgIdxX = (blinkCounter++) >> gBlinkDelay;
+        imgIdxX %= 4;  /// there are 4 images to blink
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Breif : Load and draw the Block Image
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Obstacle::LoadBlockImage(sf::RenderWindow &window, const int row, const int col) {
+    short imgIdxX = 0;
+    Block &block = m_Block[row][col];
+    
+    if ((block.m_BlockType != BRICKS) && (block.m_BlockType != BONUS)) {
+        return; /// We do not want to draw the Block
     }
     
-    InitObstacles();
-    LogInfo(BIT_OBSTACLE, "Obstacle::Obstacle(), Constructor !! \n");
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/// Brief       : Obstacle Destructor
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Obstacle::~Obstacle() {
-    LogInfo(BIT_OBSTACLE, "Obstacle::~Obstacle(), Destructor !! \n");
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/// Brief       : Create Instace of Obstacle if not created otherwise return the created one
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Obstacle *Obstacle::GetInstance() {
-    if (nullptr == m_pInstance) {
-        LogInfo(BIT_OBSTACLE, "Obstacle::GetInstance(), Creating Obstacle Instance() \n");
-        m_pInstance = new Obstacle;
-    }
-    return m_pInstance;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/// Brief       : Delete the Instance if created
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Obstacle *Obstacle::ReleaseInstance() {
-    if (nullptr != m_pInstance) {
-        LogInfo(BIT_OBSTACLE, "Obstacle::ReleaseInstance(), Deleting Obstacle Instance() \n");
-        delete m_pInstance;
-        m_pInstance = nullptr;
-    }
-    return m_pInstance;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/// Brief       : Get The Block type at row i and col j
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Obstacle::Behaviour_e Obstacle::GetBlockTypeAt(const unsigned int i, const unsigned int j) const {
-    if ((i < NUM_ROW) && (j < NUM_COL)) {
-        return m_BlockType[i][j].behaviour;
+    if (block.m_bIsEmpty) {
+        EmptyBlock(block, imgIdxX);
     }
     else {
-        LogError (BIT_OBSTACLE, "Obstacle::GetBlockTypeAt(%d, %d) :  invalid row %d or col %d \n", NUM_ROW, NUM_COL, i, j);
-        return Obstacle::NO_BEHAV;
-    }
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/// Brief       : Get The Block Ability at row i and col j
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Obstacle::Abilities_e Obstacle::GetBlockAbilityAt(const unsigned int i, const unsigned int j) const {
-    if ((i < NUM_ROW) && (j < NUM_COL)) {
-        return m_BlockType[i][j].abilities;
-    }
-    else {
-        LogError (BIT_OBSTACLE, "Obstacle::GetBlockAbilityAt(%d, %d) :  invalid row %d or col %d \n", NUM_ROW, NUM_COL, i, j);
-        return Obstacle::NO_ABILITY;
-    }
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/// Brief       : Get The Block type at row i and col j
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-int Obstacle::GetBlockSizeAt(const unsigned int i, const unsigned int j) const {
-//    if ((i < NUM_ROW) && (j < NUM_COL)) {
-//        return m_BlockType[i][j].size;
-//    }
-//    else {
-//        LogError (BIT_OBSTACLE, "Obstacle::GetBlockSizeAt(%d, %d) :  invalid row %d or col %d \n", NUM_ROW, NUM_COL, i, j);
-        return BLOCK_SIZE;
-//    }
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/// Brief       : Set Is Popped Block
-///         Here i and J are in terms of Pixels rather than Block
-///         so covert then in block by diciding then 16
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Obstacle::SetPoppedBlock(const unsigned int i, const unsigned int j) {
-    if ((i < NUM_ROW * BLOCK_SIZE) && (j < NUM_COL * BLOCK_SIZE)) {
-        const short row = i >> BLOCK_SIZE_BIT;
-        const short col = j >> BLOCK_SIZE_BIT;
-        m_BlockType[row][col].bIsPopped = true;
-    }
-    else {
-        LogError (BIT_OBSTACLE, "Obstacle::SetPoppedBlock(%d, %d) :  invalid row %d or col %d \n", NUM_ROW * BLOCK_SIZE, NUM_COL * BLOCK_SIZE, i, j);
-    }
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/// Brief       : Set Is Popped Block
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool Obstacle::IsPoppedBlock(const unsigned int i, const unsigned int j) const {
-    if ((i < NUM_ROW) && (j < NUM_COL)) {
-        return m_BlockType[i][j].bIsPopped;
-    }
-    else {
-        LogError (BIT_OBSTACLE, "Obstacle::SetPoppedBlock(%d, %d) :  invalid row %d or col %d \n", NUM_ROW, NUM_COL, i, j);
-        return false;
-    }
-}
-
-/// return the Pixl stateus is Obstacle or not, if indexes are out of range then return false
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/// Brief       : return the Pixl stateus is Obstacle or not, if indexes are out of range then return false
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool Obstacle::GetIsObstacleAt(const unsigned int i, const unsigned int j) const {
-    if ((i < NUM_ROW * BLOCK_SIZE) && (j < NUM_COL * BLOCK_SIZE)) {
-        return m_Obstacle[i][j].bIsObstacle;
-    }
-    else {
-        if (-32 > i)
-        {
-            LogError (BIT_OBSTACLE, "Obstacle::GetIsObstacleAt(%d, %d) :  invalid row %d or col %d \n", NUM_ROW * BLOCK_SIZE, NUM_COL * BLOCK_SIZE, i, j);
-        }
-        return false;
-    }
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/// Brief       : Set the Pixels of the block at X and Y
-///         Where X is Pos Y and Y is Pos X
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Obstacle::SetObstacle(const unsigned int row, const unsigned int col, Behaviour_e behaviour, Abilities_e ability) {
-    if ((row < NUM_ROW << BLOCK_SIZE_BIT) && (col < NUM_COL << BLOCK_SIZE_BIT)) {
-        m_Obstacle[row][col].bIsObstacle = true;
-        m_Obstacle[row][col].behaviour = behaviour;
-        m_Obstacle[row][col].abilities = ability;
-    }
-    else {
-        if ((col >= NUM_COL * BLOCK_SIZE) && (col < -8)) { /// For debug only
-            LogError (BIT_OBSTACLE, "Obstacle::SetObstacle(%d, %d) :  invalid row %d or col %d \n", NUM_ROW * BLOCK_SIZE, NUM_COL * BLOCK_SIZE, row, col);
+        if (EMPTY != block.m_Abilty) {
+            (block.m_bIsPopped) ? PopBlock(block) : BlinkBlock(block, imgIdxX);
         }
     }
+    
+    TileMap::PrintControl_s printControl;
+    printControl.imgType = TileMap::ITEM;
+    printControl.tileSize = sf::Vector2<float>(BLOCK_SIZE, BLOCK_SIZE);
+    printControl.xTileOffset = BLOCK_SIZE_BIT;
+    printControl.imgXIdx = imgIdxX;
+    printControl.imgYIdx = block.m_BlockType << BLOCK_SIZE_BIT;
+    printControl.position = block.m_Position;
+
+    m_Map.Load(printControl);
+    window.draw(m_Map);
 }
 
-Obstacle::ObstacleBlock_s *Obstacle::GetBlockReference(const unsigned int i, const unsigned int j) {
-    if ((i < NUM_ROW) && (j < NUM_COL)) {
-        return &m_BlockType[i][j];
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Breif : Set block as popped
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Obstacle::SetPoppedBlock(const int row, const int col, const bool bBigPlayer) {
+    Block &block = m_Block[row][col];
+    if (!block.m_bIsEmpty) {
+        block.m_bIsPopped = true;
     }
-    else {
-        LogError (BIT_OBSTACLE, "Obstacle::SetPoppedBlock(%d, %d) :  invalid row %d or col %d \n", NUM_ROW, NUM_COL, i, j);
-        return nullptr;
+    if ((bBigPlayer) && (NONE == block.m_Abilty)){
+        m_Block[row][col].m_Abilty = BREAKABLE;
     }
 }

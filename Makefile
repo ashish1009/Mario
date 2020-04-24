@@ -7,6 +7,9 @@ MARIO_INC = include
 LOGGER_SRC = Logger/src
 LOGGER_INC = Logger/include
 
+TIMER_SRC = Timer/src
+TIMER_INC = Timer/include
+
 BIN = bin
 
 SFML_GRAPHICS = -lsfml-graphics
@@ -20,31 +23,35 @@ SFML_LIB += $(SFML_WINDOW)
 SFML_LIB += $(SFML_AUDIO)
 
 SRC += main.cpp
-SRC += $(MARIO_SRC)/Entity.cpp
-SRC += $(MARIO_SRC)/Player.cpp
 SRC += $(MARIO_SRC)/Mario.cpp
+SRC += $(MARIO_SRC)/SfmlRenders.cpp
+SRC += $(MARIO_SRC)/WelcomeScreen.cpp
 SRC += $(MARIO_SRC)/TileMap.cpp
 SRC += $(MARIO_SRC)/Obstacle.cpp
-SRC += $(MARIO_SRC)/Block.cpp
 SRC += $(MARIO_SRC)/InitObstacle.cpp
+SRC += $(MARIO_SRC)/Block.cpp
+SRC += $(MARIO_SRC)/Entity.cpp
+SRC += $(MARIO_SRC)/Player.cpp
+SRC += $(MARIO_SRC)/SoundBuffer.cpp
 SRC += $(MARIO_SRC)/Item.cpp
 SRC += $(MARIO_SRC)/Bullet.cpp
-SRC += $(MARIO_SRC)/SoundBufferConst.cpp
-SRC += $(MARIO_SRC)/Enemy.cpp
+#SRC += $(MARIO_SRC)/Enemy.cpp
 
 SRC += $(LOGGER_SRC)/Logger.cpp
+SRC += $(TIMER_SRC)/Timer.cpp
 
 INC += -I$(MARIO_INC)
 INC += -I$(LOGGER_INC)
+INC += -I$(TIMER_INC)
 
-OBJ = mario.out
+OBJ = $(BIN)/mario.out
 
 default:
 	clear
 	$(GCC) -g -std=$(CPP) $(SRC) $(SFML_LIB) $(INC) $(SFML_LIB) -o$(OBJ)
 	clear
-	./Mario.out
+	./$(BIN)/Mario.out
 
 clean:
-	rm -rf mario.out
-	rm -rf mario.out.dSYM
+	rm -rf $(BIN)/mario.out
+	rm -rf $(BIN)/mario.out.dSYM

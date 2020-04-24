@@ -1,91 +1,66 @@
 #pragma once
-
+#include "Entity.h"
 #include "Bullet.h"
+#include "SoundBuffer.h"
 #include <list>
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/// Player Image Index
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-namespace PlayerImgIdx {
-static const short RUN_IDX_ARR_SIZE = 3;
-static const short STAND = 0;
-static const short DYING = 6;
-static const short RUN[RUN_IDX_ARR_SIZE] = {1, 2, 3};
-static const short JUMP = 5;
-static const short MID_INC = 15;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Player Class
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class Player : public Entity, private SoundBuffer {
-public:
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class Player : public Entity, SoundBuffer {
+private:
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// Player Image Size in Pixel
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    static const short PLAYER_WIDTH = 16;
-    static const short PLAYER_HEIGHT_SMALL = 16;
-    static const short PLAYER_HEIGHT_BIG = 32;
-    static const short MAX_JUMP_HEIGHT = 64;
+    static constexpr short PLAYER_WIDTH = 16;
+    static constexpr short PLAYER_HEIGHT_SMALL = 16;
+    static constexpr short PLAYER_HEIGHT_BIG = 32;
+    static constexpr short TOTAL_HEIGHT = PLAYER_HEIGHT_SMALL + PLAYER_HEIGHT_BIG;
     
-private:
-    static inline const std::string PLAYER_IMG_PATH = "Graphics/Mario.png";
-    static Player *m_pInstance;
-    TileMap m_Map;
-    
-    sf::Vector2f m_TileVector;
-    sf::View m_PlayerView;
-    
-    Obstacle *m_pObstacle;
-    
-    short m_PlayerHeight;
-    short m_PlayerImgIdx;
-    short m_PlayerMoveIdx;
-    short m_JumpFactor;
-    
-    bool m_bShotFire;
+    static constexpr float MAX_JUMP_HEIGHT = 70;
+    static constexpr short DEFAULT_PLAYER_LIFE = 3;
 
 private:
+    static Player *m_Instance;
+    
+    bool m_bShotFire;
+    
+    short m_Life;
+    short m_ImgIdx;
+    short m_PlayerMoveIdx;
+    
+    float m_JumpFactor;
+    
+private:
     Player();
-    ~Player();
+    void CheckState();
     
 public:
     static Player *GetInstance();
     static Player *ReleaseInstance();
     
-    int LoadPlayerImage(sf::RenderWindow &winMario);
-    void CheckPlayerState(const int frameX, sf::RenderWindow &winMario);
-    void Jump(const int frameX);
-    void Move(Entity::Direction_e direction, int &frameX, sf::RenderWindow &winMario);\
-    void IncreaseSize();
-    void IncJumFactor();
-    void FireBullet(std::list<Bullet> &fireList);
-
-    inline void SetImgIdx(const short playerImgIdx) {
-        m_PlayerImgIdx = playerImgIdx;
+    void LoadImage(sf::RenderWindow &window);
+    void Move(Entity::Direction_e directiom, float &frameX);
+    void Jump();
+    void Fire(std::list<Bullet> &fireList);
+    
+    inline short GetLife() const {
+        return m_Life;
     }
     
-    inline void ResetMoveImgIdx() {
+    inline void SetImgIdx(const short imgIdx) {
+        m_ImgIdx = imgIdx;
+    }
+    inline void ResetPlayerMoveIdx() {
         m_PlayerMoveIdx = 0;
     }
-    
-    inline void ResetJumpFactor() {
-        m_JumpFactor = 0;
-    }
-    
-    inline int GetPlayerHeight() const {
-        return m_PlayerHeight;
-    }
-    
     inline void SetShootingDone () {
         m_bShotFire = true;
+    }    
+    inline void IncSpeed() {
+        if (4 > m_Speed) {
+            m_Speed++;
+        }
     }
-    
-    /// Pure virtual funxtion
-    bool IsDownCollision (const int frameX) override;
-    bool IsJumpCollision (const int frameX) override;
-    bool IsSideCollision (const int frameX, const int pixelToColloidU, const int xPixelOfPlayer) override;
-    bool IsPlayerCollision () override;
-    
-    friend class Mario;
+    ~Player();
 };

@@ -35,16 +35,22 @@ public:
         return m_Obstacle[row][col];
     }
     
-    inline Block *GetBlock(const int row, const int col) {
+    inline const Block *const GetBlock(const int row, const int col) const {
         return &m_Block[row][col];
     }
     
-    void SetPoppedBlock(const int row, const int col, const bool bBigPlayer = false);
+    inline void SetPoppedBlock(const int row, const int col, const bool bBigPlayer = false) {
+        Block &block = m_Block[row][col];
+        if (!block.m_bIsEmpty) {
+            block.m_bIsPopped = true;
+            
+        if ((bBigPlayer) && (NONE == block.m_Abilty)){
+            m_Block[row][col].m_Abilty = BREAKABLE;
+        }
+    }
+    
     void LoadBlockImage(sf::RenderWindow &window, const int row, const int col);
     void ResetBlockPixel(Block &block);
-    void EmptyBlock(Block &block, short &imgIdxX);
-    void PopBlock(Block &block);
-    void BlinkBlock(Block &block, short &imgIdxX);
     static Obstacle *GetInstance();
     static Obstacle *ReleaseInstance();
     ~Obstacle ();

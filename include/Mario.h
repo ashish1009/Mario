@@ -1,53 +1,40 @@
 #pragma once
-
+#include "WelcomeScreen.h"
+#include "Obstacle.h"
 #include "Player.h"
-#include "Block.h"
 #include "Item.h"
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Mario Class
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class Mario : private SoundBuffer{
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class Mario : private WelcomeScreen, SoundBuffer {
 private:
-    sf::RenderWindow m_WinMario;
-    sf::Vector2u m_WinSize;
-    sf::Event m_MarioEvent;
-    sf::Texture m_MarioTexture;
-    sf::Sprite m_MarioSprite;
-    sf::View m_MarioView;
-    sf::Font m_Font;
-    sf::Text m_Text;
-    sf::Clock m_Clock;
     sf::Music m_Music;
+    sf::Clock m_Clock;
     
-//    sf::SoundBuffer m_JumpSound;
-//    sf::SoundBuffer m_FireSound;
-//    sf::SoundBuffer m_GameOverSound;
-//    sf::SoundBuffer m_BrickSmashSound;
-//    sf::SoundBuffer m_CoinSound;
+    short m_Score;
+    short m_CoinCoint;
+    short m_TimeLeft;
     
-    sf::Texture m_CoinScoreTexture;
-    sf::Sprite m_CoinScoreSprite;
-    
-    Player *m_pPlayer;
-    Obstacle *m_pObstacle;
+    float m_FrameShiftX;
     
     std::list<Item> m_lItem;
-    std::list<Bullet> m_lFire;
+    std::list<Bullet> m_lBullet;
     
-    Block m_Block;
+    Obstacle *m_pObstacle;
+    Player *m_pPlayer;
     
-    int m_FramePosition;
-    int m_Score;
-    short m_CoinCount;
-    short m_Level;
-    short m_Time;
+private:
+    void PolEvent() override;
     
-private:    
-    void DrawView();
+    void StartScreen();
     void DrawBlocks();
-    void PrintContent();
-    void PrintText(const char *printStuff, short variable, const float xPosition);
+    void DrawItems();
+    void DrawBullets();
+    
+    inline void DrawPlayer() {
+        m_pPlayer->LoadImage(m_Window);
+    }
     
 public:
     void PlayGame();

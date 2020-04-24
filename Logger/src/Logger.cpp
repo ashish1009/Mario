@@ -1,29 +1,30 @@
 #include <Logger.h>
 
-Logger *Logger::m_LoggerInstance = nullptr;
+Logger *Logger::m_Instance = nullptr;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Brief      : Return the string (in words) the level of Log level
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-char *GetLogLevelString(LogLevel_e level) {
+const char *const GetLogLevelString(const Logger::LogLevel_e level) {
     switch (level)     {
-    case LOG_ERROR:
+    case Logger::LOG_ERROR:
         return (char *)"ERROR ";
         break;
 
-    case LOG_WARNING:
+    case Logger::LOG_WARNING:
         return (char *)"WARNING ";
         break;
 
-    case LOG_INFO:
+    case Logger::LOG_INFO:
         return (char *)"INFO ";
         break;
 
-    case LOG_DEBUG:
+    case Logger::LOG_DEBUG:
         return (char *)"DEBUG ";
         break;
 
     default:
+        std::cout << "GetLogLevelString(), level (" << level << ") is invalid \n";
         break;
     }
 }
@@ -32,7 +33,7 @@ char *GetLogLevelString(LogLevel_e level) {
 /// Brief      : Constructor of logger
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Logger::Logger()
-    : m_LogLevel(LOG_ERROR), m_LogBitMask(0) {
+    : m_LogLevel(Logger::LOG_ERROR), m_LogBitMask(0) {
     std::cout << " [LOGGER] Logger::Logger(), Logger Constructor called with level " << m_LogLevel << "(" << GetLogLevelString(m_LogLevel) <<")" << ", Bit Mask " << std::hex << m_LogBitMask << std::endl;
 }
 
@@ -40,6 +41,7 @@ Logger::Logger()
 /// Brief      : Destructor of logger
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Logger::~Logger() {
+    m_Instance = nullptr;
     std::cout << " [LOGGER] Logger::~Logger(), Logger Destructor called " << std::endl;
 }
 
@@ -48,27 +50,28 @@ Logger::~Logger() {
 ///              If alredy created then return the older Pointer
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Logger *Logger::GetLoggerInstance() {
-    if (nullptr == m_LoggerInstance) {
+    if (nullptr == m_Instance) {
         std::cout << " [LOGGER] Logger::GetLoggerInstance, Creating Logger Instance " << std::endl;
-        m_LoggerInstance = new Logger;
+        m_Instance = new Logger;
     }
-    return m_LoggerInstance;
+    return m_Instance;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Brief      : Delete the created Logger Instance
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Logger::ReleaseInstance() {
-    if (nullptr != m_LoggerInstance) {
+Logger *Logger::ReleaseInstance() {
+    if (nullptr != m_Instance) {
         std::cout << " [LOGGER] Logger::ReleaseInstance, Deleting Logger Instance " << std::endl;
-        delete m_LoggerInstance;
+        delete m_Instance;
     }
+    return m_Instance;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Brief      : Set the member function of LogLevel
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Logger::SetLogLevel(LogLevel_e level) {
+void Logger::SetLogLevel(const LogLevel_e level) {
     if ((LOG_DEBUG <= level) && (LOG_ERROR >= level)) {
         std::cout << " [LOGGER] Logger::SetLogLevel(), Log level Set to " << level << std::endl;
         m_LogLevel = level;

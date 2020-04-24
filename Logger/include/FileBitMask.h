@@ -24,4 +24,6 @@ enum FileBitMask_e
     BIT_ENEMY = 11,
     
     /// forth Nibble
+    BIT_WELCOME_SCREEN = 12,
+    BIT_SFML = 13,
 };
