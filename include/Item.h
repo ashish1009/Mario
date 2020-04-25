@@ -14,8 +14,6 @@ private:
 public:
     int LoadItemImage(sf::RenderWindow &winMario);
     
-    bool IsEntityCollision (Entity *entity);
-    
     void DrawCoinJump(short &imgY);
     void DrawBonus(short &imgY);
     void DrawBrokenBrick(TileMap::PrintControl_s &printControl);

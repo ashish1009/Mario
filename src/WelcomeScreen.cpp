@@ -173,7 +173,7 @@ void WelcomeScreen::DrawPlayerDummy(const short x, const short y) {
     printControl.xTileOffset = BLOCK_SIZE_BIT;
     printControl.tileSize = sf::Vector2<float>(BLOCK_SIZE, BLOCK_SIZE);
     printControl.imgType = TileMap::PLAYER;
-    printControl.bIsInverted = true;
+    printControl.bIsInverted = false;
     
     m_Map.Load(printControl);
     m_Window.draw(m_Map);

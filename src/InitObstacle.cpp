@@ -129,13 +129,15 @@ void Obstacle::InitObstacle() {
         }
     }
 //    for (int j = 0; j < 6; j++) {
-        m_Block[9][3].m_BlockType = BRICKS;
-        m_Block[9][3].m_Abilty = NONE;
-        SetBlockPixels(m_Block[9][3]);
-
+        m_Block[9][3].m_BlockType = BONUS;
+        m_Block[9][3].m_Abilty = MUSHROOM_BONUS;
+        
         m_Block[5][3].m_BlockType = BONUS;
         m_Block[5][3].m_Abilty = COIN_BONUS;
+        
+        SetBlockPixels(m_Block[9][3]);
         SetBlockPixels(m_Block[5][3]);
+
 
     //    }
 }

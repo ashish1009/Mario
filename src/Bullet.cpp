@@ -4,15 +4,24 @@
 
 const short gExplosionTime = 6;
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Brief      :  Constructor
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Bullet::Bullet()
 : m_BulletY(0), m_BulletX(0), m_ExplosionCounter(0) {
 //    LogInfo(BIT_BONUS, "Bonus::Bonus() : Constructor called \n");
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Brief      :  Destructor
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Bullet::~Bullet() {
 //    LogInfo(BIT_BONUS, "Bonus::~Bonus() : Destructor called \n");
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Brief      :  Load Bullet
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int Bullet::LoadBulletImage(sf::RenderWindow &window) {
     TileMap::PrintControl_s printControl;
 
@@ -27,7 +36,10 @@ int Bullet::LoadBulletImage(sf::RenderWindow &window) {
             SetState(JUMPING);
         }
         else {
-            SetPosition(m_Position.X + gItemMoveFactor, m_Position.Y + gItemMoveFactor);
+            m_Position.X = (RIGHT == m_Direction) ? m_Position.X + gItemMoveFactor : m_Position.X - gItemMoveFactor;
+//            m_Position.X += gItemMoveFactor;
+            m_Position.Y += gItemMoveFactor;
+            
             m_BulletX += gItemMoveFactor;
         }
     }
@@ -37,7 +49,10 @@ int Bullet::LoadBulletImage(sf::RenderWindow &window) {
             SetState(AIR);
         }
         else {
-            SetPosition(m_Position.X + gItemMoveFactor, m_Position.Y - gItemMoveFactor);
+            m_Position.X = (RIGHT == m_Direction) ? m_Position.X + gItemMoveFactor : m_Position.X - gItemMoveFactor;
+//            m_Position.X += gItemMoveFactor;
+            m_Position.Y -= gItemMoveFactor;
+            
             m_BulletY += gItemMoveFactor;
             m_BulletX += gItemMoveFactor;
         }

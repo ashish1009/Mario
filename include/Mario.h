@@ -3,6 +3,7 @@
 #include "Obstacle.h"
 #include "Player.h"
 #include "Item.h"
+#include "Enemy.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Mario Class
@@ -10,7 +11,10 @@
 class Mario : private WelcomeScreen, SoundBuffer {
 private:
     sf::Music m_Music;
+    sf::Clock m_StartScreenClock;
     sf::Clock m_Clock;
+    
+    bool m_bPause;
     
     short m_Score;
     short m_CoinCoint;
@@ -20,6 +24,7 @@ private:
     
     std::list<Item> m_lItem;
     std::list<Bullet> m_lBullet;
+    std::list<Enemy> m_lEnemy;
     
     Obstacle *m_pObstacle;
     Player *m_pPlayer;
@@ -31,6 +36,10 @@ private:
     void DrawBlocks();
     void DrawItems();
     void DrawBullets();
+    void DrawEnemy();
+    void CheckPlayerKill();
+    void PausePlayerLoop(const short imgX, const short imgY, TileMap &map);
+    void PausePlayer();
     
     inline void DrawPlayer() {
         m_pPlayer->LoadImage(m_Window);

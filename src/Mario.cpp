@@ -11,9 +11,15 @@ const std::array<short, gNumRowToDraw> gRowBlockArr {{gRow5ForBlock, gRow9ForBlo
 /// Brief : Constructor
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Mario::Mario()
-: m_Score(0), m_CoinCoint(0), m_TimeLeft(MAX_TIME), m_FrameShiftX(0), m_pObstacle(nullptr), m_pPlayer(nullptr) {
+: m_bPause(false), m_Score(0), m_CoinCoint(0), m_TimeLeft(MAX_TIME), m_FrameShiftX(0), m_pObstacle(nullptr), m_pPlayer(nullptr) {
     m_pObstacle = Obstacle::GetInstance();
     m_pPlayer = Player::GetInstance();
+    
+    Enemy enemy;
+    enemy.SetPosition(224 + 64, 200);
+    enemy.SetDirection(Entity::LEFT);
+    m_lEnemy.push_back(enemy);
+    
     LogInfo(BIT_MARIO, "Mario::Mario(), Constructor called !!! \n");
 }
 
@@ -47,7 +53,7 @@ void Mario::PlayGame() {
         return;
     }
     if (!m_Music.openFromFile(gResourcePath + "music/main_theme.ogg")) {
-        LogError (BIT_MARIO, "Mario::PlayGame(), Can not load Mariio Theme Music ");
+        LogError (BIT_MARIO, "Mario::PlayGame(), Can not load Mariio Theme Music \n");
         return;
     }
     
@@ -65,12 +71,102 @@ void Mario::PlayGame() {
         DrawView();
         DrawBlocks();
         DrawPlayer();
+
+        PausePlayer();
+
         DrawItems();
         DrawBullets();
+        DrawEnemy();
+        
+        CheckPlayerKill();
+        
         PrintContents(m_Score, m_CoinCoint, m_TimeLeft);
         
         m_Window.display();
     } /// while (m_WinMario.isOpen())
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Breif : on getting Nonus pause the player for a while
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    void Mario::PausePlayer() {
+    if (m_bPause) {
+        sf::Clock clock;
+        clock.restart();
+        short pauseTime = 0;
+        TileMap map;
+        
+        if (Entity::FIRABLE == m_pPlayer->GetAbility()) {
+            while (pauseTime < 1000) {
+                PausePlayerLoop(m_pPlayer->GetImgIdx(), Entity::FIRABLE + (pauseTime % 2) * 48, map);
+                pauseTime = clock.getElapsedTime().asMilliseconds();
+            }
+        }
+        else {
+            while (pauseTime < 1000) {
+                PausePlayerLoop((pauseTime % 2) * PlayerImgIdx::MID_INC, 0, map);
+                pauseTime = clock.getElapsedTime().asMilliseconds();
+            }
+        }
+        m_bPause = false;
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Breif : printing player on pause loop
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Mario::PausePlayerLoop(const short imgX, const short imgY, TileMap &map) {
+    m_Window.clear();
+    m_View.reset(sf::FloatRect(0.0f, 0.0f, VIEW_WIDTH, VIEW_HEIGHT));
+    m_View.move(m_FrameShiftX, 0);
+    m_Window.setView(m_View);
+    m_Window.draw(m_Sprite);
+
+    DrawBlocks();
+
+    TileMap::PrintControl_s printControl;
+    printControl.imgXIdx = imgX;
+    printControl.imgYIdx = imgY;
+    printControl.position = m_pPlayer->GetPosition();
+    printControl.xTileOffset = BLOCK_SIZE_BIT;
+    printControl.tileSize = sf::Vector2<float>(BLOCK_SIZE, (BLOCK_SIZE << 1));
+    printControl.imgType = TileMap::PLAYER;
+    printControl.bIsInverted = (Entity::RIGHT == m_pPlayer->GetDirection()) ? false : true;
+
+    map.Load(printControl);
+    m_Window.draw(map);
+
+    PrintContents(m_Score, m_CoinCoint, m_TimeLeft);
+    m_Window.display();
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Breif : Check is player killed if yes the reset the game
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Mario:: CheckPlayerKill() {
+    if (m_pPlayer->GetIsLifeReduced()) {
+        StartScreen();
+        m_Music.play();
+        m_FrameShiftX = 0;
+        m_pPlayer->Reset();
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Breif : Draw Enemy
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Mario::DrawEnemy() {
+    auto it = m_lEnemy.begin();
+    for (; it != m_lEnemy.end(); it++) {
+        if ((it->GetPosition().X - m_FrameShiftX) < 256) {
+            it->LoadEnemyImage(m_Window);
+        }
+        if (Entity::DYING == it->GetState()) {
+            m_lEnemy.erase(it);
+            LogInfo(BIT_MARIO, "Mario::DrawEnemy(), Num Enemy %d \n", m_lEnemy.size());
+            break;
+        }
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -82,7 +178,7 @@ void Mario::DrawBullets () {
         it->LoadBulletImage(m_Window);
         if (Entity::DYING == it->GetState()) {
             m_lBullet.erase(it);
-            LogInfo(BIT_MARIO, "Mario::DrawItems(), Num Bullets %d \n", m_lItem.size());
+            LogInfo(BIT_MARIO, "Mario::DrawBullets(), Num Bullets %d \n", m_lBullet.size());
             break;
         }
     }
@@ -104,6 +200,7 @@ void Mario::DrawItems() {
                 m_Score += 1000;
                 m_Sound.setBuffer(m_PowerUpSound);
                 m_Sound.play();
+                m_bPause = true;
             }
             
             m_lItem.erase(it);
@@ -208,9 +305,11 @@ void Mario::StartScreen() {
         return;
     }
     m_Sprite.setTexture(m_Texture);
+    m_StartScreenClock.restart();
+    m_Music.pause();
     short timeInSeconds = 0;
     while ((m_Window.isOpen()) && (timeInSeconds < 2)) {   /// Wait for 4 Seconds
-        timeInSeconds = m_Clock.getElapsedTime().asSeconds();
+        timeInSeconds = m_StartScreenClock.getElapsedTime().asSeconds();
         
         m_Window.clear();
         m_View.reset(sf::FloatRect(0.0f, 0.0f, VIEW_WIDTH, VIEW_HEIGHT));

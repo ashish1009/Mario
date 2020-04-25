@@ -44,9 +44,9 @@ void Item::DrawCoinJump (short &imgY) {
 /// Brief      :  Draw Mushroom or fire leafe
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Item::DrawBonus(short &imgY) {
-    Size_e playerSize = Player::GetInstance()->GetSize();
+    Player *pPlayer = Player::GetInstance();
     
-    if (SMALL == playerSize) {
+    if (SMALL == pPlayer->GetSize()) {
         imgY = MUSHROOM << BLOCK_SIZE_BIT;
         if (AIR == m_State) {
             if (IsDownCollision()) {
@@ -72,6 +72,9 @@ void Item::DrawBonus(short &imgY) {
     }
     
     if (IsEntityCollision(Player::GetInstance())) {
+        if (m_pBlock->m_Abilty == MUSHROOM_BONUS) {
+            (SMALL == pPlayer->GetSize()) ? pPlayer->ToggleSize() : pPlayer->SetAbility(FIRABLE);
+        }
         this->m_State = DYING;
     }
 }
@@ -141,60 +144,4 @@ int Item::LoadItemImage(sf::RenderWindow &window) {
     window.draw(m_Map);
 
     return EXIT_SUCCESS;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/// Brief      :  Check the item collision with item
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool Item::IsEntityCollision(Entity *pEntity) {
-    bool bResult = false;
-    if ((pEntity->GetPosition().X + BLOCK_SIZE) == this->m_Position.X) {
-        for (int i = 0; i < pEntity->GetHeight(); i++) {
-            if (pEntity->GetPosition().Y - i == this->m_Position.Y - BLOCK_SIZE + 1) {
-                bResult = true;
-                break;
-            }
-        }
-    }
-    else if (pEntity->GetPosition().X == this->m_Position.X + BLOCK_SIZE) {
-        for (int i = 0; i < pEntity->GetHeight(); i++) {
-            if (pEntity->GetPosition().Y - i == this->m_Position.Y - BLOCK_SIZE + 1) {
-                bResult = true;
-                break;
-            }
-        }
-    }
-    else if (pEntity->GetPosition().Y - pEntity->GetHeight() == this->m_Position.Y) {
-        for (int i = 0; i < BLOCK_SIZE; i++) {
-            const int entityPixelX = pEntity->GetPosition().X + i;
-            if ((entityPixelX == this->m_Position.X) || (entityPixelX == this->m_Position.X + BLOCK_SIZE)) {
-                bResult = true;
-                break;
-            }
-        }
-    }
-    else if (pEntity->GetPosition().Y == this->m_Position.Y - BLOCK_SIZE) {
-        for (int i = 0; i < BLOCK_SIZE; i++) {
-            const int entityPixelX = pEntity->GetPosition().X + i;
-            if ((entityPixelX == this->m_Position.X) || (entityPixelX == this->m_Position.X + BLOCK_SIZE - 1)) {
-                bResult = true;
-                break;
-            }
-        }
-    }
-    else if (pEntity->GetPosition().Y == m_Position.Y) {
-        for (int i = 0; i < BLOCK_SIZE; i++) {
-            const int entityPixelX = pEntity->GetPosition().X + i;
-            if ((entityPixelX == this->m_Position.X) || (entityPixelX == this->m_Position.X + BLOCK_SIZE - 1)) {
-                bResult = true;
-                break;
-            }
-        }
-    }
-    if (bResult) {
-        if (m_pBlock->m_Abilty == MUSHROOM_BONUS) {
-            (SMALL == pEntity->GetSize()) ? pEntity->IncSize() : pEntity->SetAbility(FIRABLE);
-        }
-    }
-    return bResult;
 }

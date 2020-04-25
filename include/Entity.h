@@ -66,6 +66,7 @@ public:
         JUMPING = 3,
         DYING = 4,
         SHOOTING = 5,
+        INVISIBLE_STATE = 6,
     };
 
     static const short DEFAULT_SPEED = 0;
@@ -94,7 +95,9 @@ public:
     bool IsJumpCollision();
     bool IsSideCollision();
     
-    void IncSize();
+    bool IsEntityCollision(Entity *pEntity);
+    
+    void ToggleSize();
     
     inline void SetPosition (const float X, const float Y) {
         m_Position.X = X;

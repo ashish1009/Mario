@@ -19,6 +19,7 @@ void TileMap::Load(PrintControl_s printControl) {
             
         case ENEMY:
             m_TileSet = &m_EnemyTileSet;
+//            std::cout << std::dec << "load" << printControl.position.X << " " << printControl.position.Y << "\n";
             break;
             
         default:

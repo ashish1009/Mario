@@ -4,19 +4,19 @@
 Player *Player::m_Instance = nullptr;
 
 const short PLAYER_START_X = 40;
-const short PLAYER_START_Y = 180;
+const short PLAYER_START_Y = 199;
 const short FRAME_MOVE_LIMIT = 140;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Brief : Constructor
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Player::Player()
-: m_bShotFire(false), m_Life(DEFAULT_PLAYER_LIFE), m_ImgIdx(PlayerImgIdx::STAND), m_PlayerMoveIdx(0), m_JumpFactor(0.0f) {
-    SetPosition(48, PLAYER_START_Y);
+: m_bShotFire(false), m_bLifeReduced(false), m_Life(DEFAULT_PLAYER_LIFE), m_ImgIdx(PlayerImgIdx::STAND), m_PlayerMoveIdx(0), m_JumpFactor(0.0f) {
+    SetPosition(PLAYER_START_X, PLAYER_START_Y);
     SetHeight(PLAYER_HEIGHT_SMALL);
     
-    IncSize();
-    SetAbility(FIRABLE);
+//    IncSize();
+//    SetAbility(FIRABLE);
     LogInfo(BIT_PLAYER, "Player::Player(), Constructor called !!! \n");
 }
 
@@ -74,7 +74,13 @@ void Player::LoadImage(sf::RenderWindow &window) {
 /// Breif : Check the current state of Player and perform Action
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Player::CheckState() {
-    if ((JUMPING == m_State) || ((JUMPING == m_PrevState) && (SHOOTING == m_State))) {
+    if (DYING == m_State) {
+        if (BIG == m_Size) {
+            m_State = INVISIBLE_STATE;
+        }
+        ToggleSize();
+    }
+    else if ((JUMPING == m_State) || ((JUMPING == m_PrevState) && (SHOOTING == m_State))) {
         SetImgIdx(PlayerImgIdx::JUMP);
         Jump();
     }
@@ -99,6 +105,11 @@ void Player::CheckState() {
             SetState(GROUND);
             m_Position.X = static_cast<int>(m_Position.X);
         }
+    }
+    
+    if (m_Position.Y >= 250) {
+        m_Life--;
+        m_bLifeReduced = true;
     }
 }
 
@@ -173,11 +184,33 @@ void Player::Fire(std::list<Bullet> &fireList) {
         m_Sound.play();
 
         Bullet bullet;
-        bullet.SetPosition(m_Position.X + PLAYER_WIDTH, m_Position.Y - (m_Height >> 1));   /// Store the Initial position of Gift as 1 size up than block
+        
+        bullet.SetDirection(m_Direction);
+        if (RIGHT == m_Direction) {
+            bullet.SetPosition(m_Position.X + PLAYER_WIDTH, m_Position.Y - (m_Height >> 1));   /// Store the Initial position of Gift as 1 size up than block
+        }
+        else {
+            bullet.SetPosition(m_Position.X, m_Position.Y - (m_Height >> 1));   /// Store the Initial position of Gift as 1 size up than block
+        }
+        
         fireList.push_back(bullet);
         
         m_PrevState = m_State;
         m_State = SHOOTING;
         LogDebug(BIT_PLAYER, "Player::Fire(), Number of Bullets : %d\n", fireList.size());
     }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Breif : Reset the plaer
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Player::Reset() {
+    m_State = AIR;
+    m_Position.X = PLAYER_START_X;
+    m_Position.Y = PLAYER_START_Y;
+    m_Size = SMALL;
+    m_TileVector = {PLAYER_WIDTH, PLAYER_HEIGHT_SMALL};
+    m_Speed = DEFAULT_SPEED;
+    m_Ability = P1_REGULAR;
+    m_bLifeReduced = false;
 }

@@ -24,6 +24,7 @@ private:
     static Player *m_Instance;
     
     bool m_bShotFire;
+    bool m_bLifeReduced;
     
     short m_Life;
     short m_ImgIdx;
@@ -43,11 +44,17 @@ public:
     void Move(Entity::Direction_e directiom, float &frameX);
     void Jump();
     void Fire(std::list<Bullet> &fireList);
+    void Reset();
     
+    inline bool GetIsLifeReduced () const {
+        return m_bLifeReduced;
+    }
+    inline void SetIsLifeReduced() {
+        m_bLifeReduced = false;
+    }
     inline short GetLife() const {
         return m_Life;
     }
-    
     inline void SetImgIdx(const short imgIdx) {
         m_ImgIdx = imgIdx;
     }
@@ -61,6 +68,9 @@ public:
         if (4 > m_Speed) {
             m_Speed++;
         }
+    }
+    inline short GetImgIdx() {
+        return m_ImgIdx;
     }
     ~Player();
 };
