@@ -19,7 +19,9 @@ protected:
     sf::SoundBuffer m_PowerUpAppearSound;
     sf::SoundBuffer m_PowerUpSound;
     sf::SoundBuffer m_StompSound;
-    sf::SoundBuffer m_GameOverSound;    
+    sf::SoundBuffer m_GameOverSound;
+    
+    sf::SoundBuffer m_DeathSound;    
 
 public:
     SoundBuffer();

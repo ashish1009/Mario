@@ -13,6 +13,7 @@ SoundBuffer::SoundBuffer() {
     m_OneUpSound.loadFromFile(gResourcePath + "sound/one_up.ogg");
     m_PowerUpAppearSound.loadFromFile(gResourcePath + "sound/powerup_appears.ogg");
     m_PowerUpSound.loadFromFile(gResourcePath + "sound/powerup.ogg");
+    m_DeathSound.loadFromFile(gResourcePath + "music/death.wav");
 }
 
 SoundBuffer::~SoundBuffer() {

@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Entity.h"
+#include "Enemy.h"
+#include <list>
 
 class Bullet : public Entity {
 private:

@@ -3,7 +3,6 @@
 #include "Obstacle.h"
 #include "Player.h"
 #include "Item.h"
-#include "Enemy.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Mario Class
@@ -23,19 +22,18 @@ private:
     float m_FrameShiftX;
     
     std::list<Item> m_lItem;
-    std::list<Bullet> m_lBullet;
     std::list<Enemy> m_lEnemy;
     
     Obstacle *m_pObstacle;
     Player *m_pPlayer;
     
 private:
+    void AddEnemy();
     void PolEvent() override;
     
     void StartScreen();
     void DrawBlocks();
     void DrawItems();
-    void DrawBullets();
     void DrawEnemy();
     void CheckPlayerKill();
     void PausePlayerLoop(const short imgX, const short imgY, TileMap &map);

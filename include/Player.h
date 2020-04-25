@@ -23,6 +23,8 @@ private:
 private:
     static Player *m_Instance;
     
+    bool m_bDying;
+    bool m_bInvisible;
     bool m_bShotFire;
     bool m_bLifeReduced;
     
@@ -31,10 +33,14 @@ private:
     short m_PlayerMoveIdx;
     
     float m_JumpFactor;
+
+public:
+    std::list<Bullet> m_lBullet;
     
 private:
     Player();
-    void CheckState();
+    void CheckState(sf::RenderWindow &window);
+    void DrawDyingPlayer(sf::RenderWindow &window);
     
 public:
     static Player *GetInstance();
@@ -43,8 +49,16 @@ public:
     void LoadImage(sf::RenderWindow &window);
     void Move(Entity::Direction_e directiom, float &frameX);
     void Jump();
-    void Fire(std::list<Bullet> &fireList);
+    void Fire();
     void Reset();
+    void DrawBullets (sf::RenderWindow &window);
+    
+    inline bool GetIsDying() {
+        return m_bDying;
+    }
+    inline bool GetIsVissble() const {
+        return m_bInvisible;
+    }
     
     inline bool GetIsLifeReduced () const {
         return m_bLifeReduced;

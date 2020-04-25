@@ -7,6 +7,19 @@ const short gNumRowToDraw = 2;
 const short gNumColView = VIEW_WIDTH >> BLOCK_SIZE_BIT;     /// to divide by Block SIze = 16
 const std::array<short, gNumRowToDraw> gRowBlockArr {{gRow5ForBlock, gRow9ForBlock}};
 
+std::array<EnemyPosType_s, 8> gEnemyPos {{{DUCK, 288}, {DOG, 480}, {DOG, 496}, {DOG, 832}, {DUCK, 1328}, {DUCK, 1360}, {DUCK, 1742}, {DOG, 2680}}};
+
+void Mario::AddEnemy() {
+    Enemy enemy;
+    enemy.SetDirection(Entity::LEFT);
+    
+    for (auto &it : gEnemyPos) {
+        enemy.SetPosition(it.xPos, 10);
+        enemy.SetType(it.type);
+        m_lEnemy.push_back(enemy);
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Brief : Constructor
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -15,10 +28,7 @@ Mario::Mario()
     m_pObstacle = Obstacle::GetInstance();
     m_pPlayer = Player::GetInstance();
     
-    Enemy enemy;
-    enemy.SetPosition(224 + 64, 200);
-    enemy.SetDirection(Entity::LEFT);
-    m_lEnemy.push_back(enemy);
+    AddEnemy();
     
     LogInfo(BIT_MARIO, "Mario::Mario(), Constructor called !!! \n");
 }
@@ -56,26 +66,32 @@ void Mario::PlayGame() {
         LogError (BIT_MARIO, "Mario::PlayGame(), Can not load Mariio Theme Music \n");
         return;
     }
-    
-//    m_FrameShiftX = 920;
-//    StartScreen();
-//    m_Music.play();
+    StartScreen();
+    m_Music.play();
     
     m_Clock.restart();
     while (m_Window.isOpen()) {
         m_TimeLeft = MAX_TIME - m_Clock.getElapsedTime().asSeconds();
+        
+        if (m_pPlayer->GetIsDying()) {
+            m_Music.stop();
+        }
         
         ResetScreen();
         PolEvent();
         
         DrawView();
         DrawBlocks();
-        DrawPlayer();
 
+        if (Entity::INVISIBLE_STATE == m_pPlayer->GetState()) {
+            m_bPause = true;
+        }
+        
         PausePlayer();
 
+        DrawPlayer();
+
         DrawItems();
-        DrawBullets();
         DrawEnemy();
         
         CheckPlayerKill();
@@ -89,7 +105,7 @@ void Mario::PlayGame() {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Breif : on getting Nonus pause the player for a while
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    void Mario::PausePlayer() {
+void Mario::PausePlayer() {
     if (m_bPause) {
         sf::Clock clock;
         clock.restart();
@@ -158,27 +174,12 @@ void Mario:: CheckPlayerKill() {
 void Mario::DrawEnemy() {
     auto it = m_lEnemy.begin();
     for (; it != m_lEnemy.end(); it++) {
-        if ((it->GetPosition().X - m_FrameShiftX) < 256) {
+        if ((it->GetPosition().X - m_FrameShiftX) < 320) {
             it->LoadEnemyImage(m_Window);
         }
         if (Entity::DYING == it->GetState()) {
             m_lEnemy.erase(it);
             LogInfo(BIT_MARIO, "Mario::DrawEnemy(), Num Enemy %d \n", m_lEnemy.size());
-            break;
-        }
-    }
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/// Breif : Draw Bullets
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Mario::DrawBullets () {
-    auto it = m_lBullet.begin();
-    for (; it != m_lBullet.end(); it++) {
-        it->LoadBulletImage(m_Window);
-        if (Entity::DYING == it->GetState()) {
-            m_lBullet.erase(it);
-            LogInfo(BIT_MARIO, "Mario::DrawBullets(), Num Bullets %d \n", m_lBullet.size());
             break;
         }
     }
@@ -266,7 +267,7 @@ void Mario::PolEvent() {
                     m_Sound.play();
                 }
                 if (m_Event.key.code == sf::Keyboard::LControl) {
-                    m_pPlayer->Fire(m_lBullet);
+                    m_pPlayer->Fire();
                 }
                 break;
                 
@@ -306,7 +307,7 @@ void Mario::StartScreen() {
     }
     m_Sprite.setTexture(m_Texture);
     m_StartScreenClock.restart();
-    m_Music.pause();
+    m_Music.stop();
     short timeInSeconds = 0;
     while ((m_Window.isOpen()) && (timeInSeconds < 2)) {   /// Wait for 4 Seconds
         timeInSeconds = m_StartScreenClock.getElapsedTime().asSeconds();

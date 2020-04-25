@@ -37,7 +37,6 @@ int Bullet::LoadBulletImage(sf::RenderWindow &window) {
         }
         else {
             m_Position.X = (RIGHT == m_Direction) ? m_Position.X + gItemMoveFactor : m_Position.X - gItemMoveFactor;
-//            m_Position.X += gItemMoveFactor;
             m_Position.Y += gItemMoveFactor;
             
             m_BulletX += gItemMoveFactor;
@@ -50,7 +49,6 @@ int Bullet::LoadBulletImage(sf::RenderWindow &window) {
         }
         else {
             m_Position.X = (RIGHT == m_Direction) ? m_Position.X + gItemMoveFactor : m_Position.X - gItemMoveFactor;
-//            m_Position.X += gItemMoveFactor;
             m_Position.Y -= gItemMoveFactor;
             
             m_BulletY += gItemMoveFactor;
@@ -58,7 +56,7 @@ int Bullet::LoadBulletImage(sf::RenderWindow &window) {
         }
     }
 
-    if (IsSideCollision()) {
+    if (IsSideCollision()) { /// with the obstacles
         printControl.imgYIdx = 11 << BLOCK_SIZE_BIT;
         m_ExplosionCounter++;
     }

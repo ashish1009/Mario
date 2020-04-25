@@ -19,15 +19,12 @@ Entity::~Entity() {
 }
 
 void Entity::ToggleSize() {
-    static int  i = 0;
     if (SMALL == m_Size) {
-        std::cout << "Smakk " << i++ << " \n";
         m_Size = BIG;
         m_Height = (BLOCK_SIZE << 1);
         m_TileVector = {BLOCK_SIZE, (BLOCK_SIZE << 1)};
     }
     else {
-        std::cout << "vig " << i++ << "\n";
         m_Size = SMALL;
         m_Height = BLOCK_SIZE;
         m_TileVector = {BLOCK_SIZE, BLOCK_SIZE};
@@ -122,40 +119,16 @@ bool Entity::IsSideCollision () {
 /// Brief      :  Check the item collision with item
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Entity::IsEntityCollision(Entity *pEntity) {
-    if ((pEntity->GetPosition().X + BLOCK_SIZE) == this->m_Position.X) {
+    if (((pEntity->GetPosition().X + BLOCK_SIZE) >= this->m_Position.X) && (pEntity->GetPosition().X <= (this->m_Position.X + BLOCK_SIZE))) { // ==
         for (int i = 0; i < pEntity->GetHeight(); i++) {
-            if (pEntity->GetPosition().Y - i == this->m_Position.Y - BLOCK_SIZE + 1) {
+            if ((pEntity->GetPosition().Y >= (this->m_Position.Y - BLOCK_SIZE)) && ((pEntity->GetPosition().Y - BLOCK_SIZE) <= this->m_Position.Y)) {
                 return true;
             }
         }
     }
-    else if (pEntity->GetPosition().X == this->m_Position.X + BLOCK_SIZE) {
-        for (int i = 0; i < pEntity->GetHeight(); i++) {
-            if (pEntity->GetPosition().Y - i == this->m_Position.Y - BLOCK_SIZE + 1) {
-                return true;
-            }
-        }
-    }
-    else if (pEntity->GetPosition().Y - pEntity->GetHeight() == this->m_Position.Y) {
+    else if ((pEntity->GetPosition().Y >= this->m_Position.Y - BLOCK_SIZE) && ((pEntity->GetPosition().Y - BLOCK_SIZE) <= this->m_Position.Y)) {
         for (int i = 0; i < BLOCK_SIZE; i++) {
-            const int entityPixelX = pEntity->GetPosition().X + i;
-            if ((entityPixelX == this->m_Position.X) || (entityPixelX == this->m_Position.X + BLOCK_SIZE)) {
-                return true;
-            }
-        }
-    }
-    else if (pEntity->GetPosition().Y == this->m_Position.Y - BLOCK_SIZE) {
-        for (int i = 0; i < BLOCK_SIZE; i++) {
-            const int entityPixelX = pEntity->GetPosition().X + i;
-            if ((entityPixelX == this->m_Position.X) || (entityPixelX == this->m_Position.X + BLOCK_SIZE - 1)) {
-                return true;
-            }
-        }
-    }
-    else if (pEntity->GetPosition().Y == m_Position.Y) {
-        for (int i = 0; i < BLOCK_SIZE; i++) {
-            const int entityPixelX = pEntity->GetPosition().X + i;
-            if ((entityPixelX == this->m_Position.X) || (entityPixelX == this->m_Position.X + BLOCK_SIZE - 1)) {
+            if (((pEntity->GetPosition().X + BLOCK_SIZE) >= this->m_Position.X) && (pEntity->GetPosition().X <= (this->m_Position.X + BLOCK_SIZE))) {
                 return true;
             }
         }
